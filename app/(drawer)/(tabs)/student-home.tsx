@@ -124,7 +124,7 @@ export default function StudentHomePage() {
 
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <AntDesign name="CheckCircle" size={24} color="#52c41a" />
+                <AntDesign name="checkcircleo" size={24} color="#52c41a" />
               </View>
               <Text style={styles.statNumber}>
                 {dashboardStats.verifiedCredentials}
@@ -150,7 +150,7 @@ export default function StudentHomePage() {
           <View style={styles.statsRow}>
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <AntDesign name="ClockCircle" size={24} color="#faad14" />
+                <AntDesign name="clockcircleo" size={24} color="#faad14" />
               </View>
               <Text style={styles.statNumber}>
                 {dashboardStats.pendingCredentials}
@@ -165,7 +165,7 @@ export default function StudentHomePage() {
 
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <AntDesign name="Eye" size={24} color="#722ed1" />
+                <AntDesign name="eye" size={24} color="#722ed1" />
               </View>
               <Text style={styles.statNumber}>
                 {dashboardStats.recentVerifications}

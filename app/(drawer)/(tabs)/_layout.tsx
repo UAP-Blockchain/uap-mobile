@@ -123,38 +123,12 @@ export default function TabLayout() {
   // Custom tab bar components
   const renderTimeSheetTabIcon = useCallback(
     ({ focused }: { focused: boolean }) => (
-      <View
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 30,
-          backgroundColor: "#fff",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: 0,
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: 3,
-          },
-          shadowOpacity: 0.27,
-          shadowRadius: 4.65,
-          elevation: 6,
-        }}
-      >
-        <LinearGradient
-          colors={focused ? ["#3674B5", "#0d47a1"] : ["#e0e0e0", "#bdbdbd"]}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 25,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <AntDesign name="calendar" size={24} color={"white"} />
-        </LinearGradient>
-      </View>
+      <TabBarIcon
+        focused={focused}
+        name="clockcircle"
+        color={focused ? "#3674B5" : "#888"}
+        size={24}
+      />
     ),
     []
   );
@@ -203,31 +177,33 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "#888",
         tabBarStyle: {
           backgroundColor: "#ffffff",
-          paddingBottom: 5,
+          paddingBottom: 8,
+          paddingTop: 8,
           height: 65,
           borderTopWidth: 0,
           elevation: 10,
           shadowColor: "#000",
           shadowOffset: {
             width: 0,
-            height: -4,
+            height: -2,
           },
           shadowOpacity: 0.1,
-          shadowRadius: 8,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          shadowRadius: 4,
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
           position: "absolute",
           bottom: 0,
           zIndex: 8,
         },
         tabBarIconStyle: {
-          marginTop: 5,
+          marginTop: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          marginTop: 3,
-          marginBottom: 5,
+          fontSize: 11,
+          marginTop: 2,
+          marginBottom: 2,
           fontWeight: "500",
+          textAlign: "center",
         },
       }}
     >
@@ -248,7 +224,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="timetable"
         options={{
-          title: "Thời khóa biểu",
+          title: "Lịch học",
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               focused={focused}
@@ -266,61 +242,9 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               focused={focused}
-              name="checkcircle"
+              name="user"
               color={color}
               size={size}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="menu-2"
-        options={{
-          title: "Menu 2",
-          tabBarIcon: ({ color, size, focused }) => (
-            <TabBarIcon
-              focused={focused}
-              name="form"
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="menu-3"
-        options={{
-          title: "Menu 3",
-          tabBarIcon: renderTimeSheetTabIcon,
-          tabBarButton: (props) => {
-            const { onPress, ...touchableProps } = props;
-            return (
-              <TouchableOpacity
-                style={touchableProps.style}
-                accessibilityState={touchableProps.accessibilityState}
-                accessibilityLabel={touchableProps.accessibilityLabel}
-                testID={touchableProps.testID}
-                onPress={() => {
-                  router.push("/timesheet" as any);
-                }}
-              >
-                {props.children}
-              </TouchableOpacity>
-            );
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="menu-4"
-        options={{
-          title: "Menu 4",
-          tabBarIcon: ({ color, size, focused }) => (
-            <TabBarIcon
-              focused={focused}
-              name="attach-money"
-              color={color}
-              size={size}
-              iconType="MaterialIcons"
             />
           ),
         }}

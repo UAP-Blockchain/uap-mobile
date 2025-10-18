@@ -75,6 +75,17 @@ export default function DrawerLayout() {
           </Pressable>
 
           <Pressable
+            onPress={() => router.push("/timesheet" as any)}
+            style={({ pressed }) => ({
+              backgroundColor: pressed ? "#f0f0f0" : "transparent",
+              borderRadius: 8,
+              padding: 16,
+            })}
+          >
+            <Text style={{ fontSize: 16, color: "#333" }}>Chấm công</Text>
+          </Pressable>
+
+          <Pressable
             onPress={() => router.push("/(drawer)/chat" as any)}
             style={({ pressed }) => ({
               backgroundColor: pressed ? "#f0f0f0" : "transparent",

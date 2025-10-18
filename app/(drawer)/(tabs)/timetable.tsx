@@ -172,13 +172,13 @@ export default function TimetablePage() {
   const getAttendanceIcon = (attendance?: string) => {
     switch (attendance) {
       case "attended":
-        return "checkcircle";
+        return "checkcircleo";
       case "absent":
-        return "closecircle";
+        return "closecircleo";
       case "not_yet":
-        return "exclamationcircle";
+        return "exclamationcircleo";
       default:
-        return "questioncircle";
+        return "questioncircleo";
     }
   };
 
@@ -352,15 +352,15 @@ export default function TimetablePage() {
         <Text style={styles.legendTitle}>Chú thích:</Text>
         <View style={styles.legendItems}>
           <View style={styles.legendItem}>
-            <AntDesign name="checkcircle" size={12} color="#52c41a" />
+            <AntDesign name="checkcircleo" size={12} color="#52c41a" />
             <Text style={styles.legendText}>Đã tham gia</Text>
           </View>
           <View style={styles.legendItem}>
-            <AntDesign name="closecircle" size={12} color="#ff4d4f" />
+            <AntDesign name="closecircleo" size={12} color="#ff4d4f" />
             <Text style={styles.legendText}>Vắng mặt</Text>
           </View>
           <View style={styles.legendItem}>
-            <AntDesign name="exclamationcircle" size={12} color="#faad14" />
+            <AntDesign name="exclamationcircleo" size={12} color="#faad14" />
             <Text style={styles.legendText}>Chưa đến</Text>
           </View>
         </View>
