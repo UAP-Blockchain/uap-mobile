@@ -16,167 +16,76 @@ import { AntDesign } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
-interface Course {
-  code: string;
-  name: string;
-  isActive: boolean;
-}
-
-interface Semester {
-  id: string;
-  name: string;
-  courses: Course[];
-}
-
-interface AttendanceRecord {
-  no: number;
-  date: string;
-  slot: number;
-  slotTime: string;
-  room: string;
-  lecturer: string;
-  groupName: string;
+interface CourseAttendance {
+  courseCode: string;
+  courseName: string;
+  className: string;
+  startDate: string;
+  endDate: string;
+  attended: number;
+  total: number;
+  percentage: number;
   status: "Present" | "Absent" | "Future";
-  lecturerComment?: string;
 }
 
 export default function AttendancePage() {
   const insets = useSafeAreaInsets();
   const auth = useSelector(selectAuthLogin);
-  const [selectedCourse, setSelectedCourse] = useState("MLN131");
+  const [selectedSemester, setSelectedSemester] = useState("fall2025");
 
-  // Mock semester data - simplified
-  const semesters: Semester[] = [
-    {
-      id: "sem9",
-      name: "Fall 2025",
-      courses: [
-        { code: "MLN131", name: "Scientific Socialism", isActive: true },
-        {
-          code: "VNR202",
-          name: "History of Vietnam Communist Party",
-          isActive: false,
-        },
-        { code: "HCM202", name: "Ho Chi Minh Ideology", isActive: false },
-        { code: "SEP490", name: "SE Capstone Project", isActive: false },
-      ],
-    },
-    {
-      id: "sem8",
-      name: "Summer 2025",
-      courses: [
-        { code: "WDP301", name: "Web Development Project", isActive: false },
-        {
-          code: "EXE201",
-          name: "Experiential Entrepreneurship 2",
-          isActive: false,
-        },
-        { code: "PRM392", name: "Mobile Programming", isActive: false },
-      ],
-    },
+  // Mock semester data
+  const semesters = [
+    { id: "fall2025", name: "FALL2025", isActive: true },
+    { id: "summer2025", name: "SUMMER2025", isActive: false },
+    { id: "spring2025", name: "SPRING2025", isActive: false },
+    { id: "fall2024", name: "FALL2024", isActive: false },
   ];
 
-  // Mock attendance data - 10 slots
-  const attendanceData: AttendanceRecord[] = [
+  // Mock course attendance data
+  const courseAttendanceData: CourseAttendance[] = [
     {
-      no: 1,
-      date: "2025-09-08",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
+      courseCode: "HCM202",
+      courseName: "Ho Chi Minh Ideology",
+      className: "Half1_GD1705",
+      startDate: "09/09/2025",
+      endDate: "10/10/2025",
+      attended: 10,
+      total: 10,
+      percentage: 100,
       status: "Present",
     },
     {
-      no: 2,
-      date: "2025-09-12",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
+      courseCode: "MLN131",
+      courseName: "Scientific socialism",
+      className: "Half2_GD1704",
+      startDate: "13/10/2025",
+      endDate: "13/11/2025",
+      attended: 2,
+      total: 2,
+      percentage: 100,
       status: "Present",
     },
     {
-      no: 3,
-      date: "2025-09-16",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
+      courseCode: "VNR202",
+      courseName: "History of Vietnam Communist Party",
+      className: "Half2_GD1705",
+      startDate: "14/10/2025",
+      endDate: "14/11/2025",
+      attended: 1,
+      total: 2,
+      percentage: 50,
       status: "Absent",
     },
     {
-      no: 4,
-      date: "2025-09-19",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
+      courseCode: "SEP490",
+      courseName: "SE Capstone Project",
+      className: "FA25SE210_GFA130",
+      startDate: "13/09/2025",
+      endDate: "20/12/2025",
+      attended: 4,
+      total: 5,
+      percentage: 80,
       status: "Present",
-    },
-    {
-      no: 5,
-      date: "2025-09-23",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
-      status: "Future",
-    },
-    {
-      no: 6,
-      date: "2025-09-26",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
-      status: "Future",
-    },
-    {
-      no: 7,
-      date: "2025-09-30",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
-      status: "Future",
-    },
-    {
-      no: 8,
-      date: "2025-10-03",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
-      status: "Future",
-    },
-    {
-      no: 9,
-      date: "2025-10-07",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
-      status: "Future",
-    },
-    {
-      no: 10,
-      date: "2025-10-10",
-      slot: 2,
-      slotTime: "09:30-11:45",
-      room: "NVH 409",
-      lecturer: "DuyNK32",
-      groupName: "Half1_GD1705",
-      status: "Future",
     },
   ];
 
@@ -184,138 +93,106 @@ export default function AttendancePage() {
     console.log("AttendancePage mounted", auth);
   }, [auth]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Present":
-        return "#52c41a";
-      case "Absent":
-        return "#ff4d4f";
-      case "Future":
-        return "#8c8c8c";
-      default:
-        return "#8c8c8c";
-    }
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 80) return "#52c41a";
+    if (percentage >= 50) return "#faad14";
+    return "#ff4d4f";
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "Present":
-        return "Present";
-      case "Absent":
-        return "Absent";
-      case "Future":
-        return "Future";
-      default:
-        return status;
-    }
+  const getStatusColor = (percentage: number) => {
+    if (percentage >= 80) return "#52c41a";
+    if (percentage >= 50) return "#faad14";
+    return "#ff4d4f";
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Present":
-        return "checkcircleo";
-      case "Absent":
-        return "closecircleo";
-      case "Future":
-        return "exclamationcircleo";
-      default:
-        return "questioncircleo";
-    }
+  const renderProgressCircle = (percentage: number, size: number = 40) => {
+    const color = getProgressColor(percentage);
+    const radius = size / 2;
+    const strokeWidth = 4;
+    const circumference = 2 * Math.PI * (radius - strokeWidth / 2);
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+    return (
+      <View style={styles.progressContainer}>
+        <View style={[styles.progressCircle, { width: size, height: size }]}>
+          {/* Background circle */}
+          <View
+            style={[
+              styles.progressBackground,
+              {
+                width: size,
+                height: size,
+                borderRadius: radius,
+                borderWidth: strokeWidth,
+                borderColor: "#e8e8e8",
+              },
+            ]}
+          />
+          {/* Progress arc using border */}
+          <View
+            style={[
+              styles.progressArc,
+              {
+                width: size,
+                height: size,
+                borderRadius: radius,
+                borderWidth: strokeWidth,
+                borderColor: color,
+                borderTopColor: color,
+                borderRightColor: percentage > 25 ? color : "#e8e8e8",
+                borderBottomColor: percentage > 50 ? color : "#e8e8e8",
+                borderLeftColor: percentage > 75 ? color : "#e8e8e8",
+                transform: [{ rotate: "-90deg" }],
+              },
+            ]}
+          />
+          {/* Percentage text */}
+          <View style={styles.progressTextContainer}>
+            <Text style={[styles.progressText, { color }]}>{percentage}%</Text>
+          </View>
+        </View>
+      </View>
+    );
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "short" });
-    const dateFormatted = date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    return `${dayOfWeek} ${dateFormatted}`;
-  };
+  const renderCourseCard = (course: CourseAttendance) => {
+    const statusColor = getStatusColor(course.percentage);
 
-  const handleCourseSelect = (courseCode: string) => {
-    setSelectedCourse(courseCode);
-  };
-
-  const renderCourseItem = (course: Course) => (
-    <TouchableOpacity
-      key={course.code}
-      style={[styles.courseItem, course.isActive && styles.activeCourseItem]}
-      onPress={() => handleCourseSelect(course.code)}
-    >
-      <Text
-        style={[styles.courseCode, course.isActive && styles.activeCourseCode]}
+    return (
+      <TouchableOpacity
+        key={course.courseCode}
+        style={styles.courseCard}
+        onPress={() => {
+          // Navigate to course details
+          console.log("Navigate to course details:", course.courseCode);
+        }}
+        activeOpacity={0.8}
       >
-        {course.code}
-      </Text>
-      <Text style={styles.courseName} numberOfLines={1}>
-        {course.name}
-      </Text>
-    </TouchableOpacity>
-  );
+        <View style={styles.cardContent}>
+          <View style={styles.progressSection}>
+            {renderProgressCircle(course.percentage)}
+          </View>
 
-  const renderAttendanceRecord = (record: AttendanceRecord) => (
-    <View key={record.no} style={styles.recordRow}>
-      <View style={styles.recordNumber}>
-        <Text style={styles.recordNumberText}>{record.no}</Text>
-      </View>
-
-      <View style={styles.recordDate}>
-        <Text style={styles.dateText}>{formatDate(record.date)}</Text>
-      </View>
-
-      <View style={styles.recordSlot}>
-        <Text style={styles.slotText}>Slot {record.slot}</Text>
-        <Text style={styles.timeText}>{record.slotTime}</Text>
-      </View>
-
-      <View style={styles.recordRoom}>
-        <Text style={styles.roomText}>{record.room}</Text>
-      </View>
-
-      <View style={styles.recordLecturer}>
-        <Text style={styles.lecturerText}>{record.lecturer}</Text>
-      </View>
-
-      <View style={styles.recordGroup}>
-        <Text style={styles.groupText}>{record.groupName}</Text>
-      </View>
-
-      <View style={styles.recordStatus}>
-        <AntDesign
-          name={getStatusIcon(record.status)}
-          size={12}
-          color={getStatusColor(record.status)}
-        />
-        <Text
-          style={[styles.statusText, { color: getStatusColor(record.status) }]}
-        >
-          {getStatusText(record.status)}
-        </Text>
-      </View>
-    </View>
-  );
-
-  // Calculate statistics
-  const totalSessions = attendanceData.length;
-  const completedSessions = attendanceData.filter(
-    (record) => record.status !== "Future"
-  ).length;
-  const presentSessions = attendanceData.filter(
-    (record) => record.status === "Present"
-  ).length;
-  const absentSessions = attendanceData.filter(
-    (record) => record.status === "Absent"
-  ).length;
-  const absentPercentage =
-    completedSessions > 0
-      ? Math.round((absentSessions / completedSessions) * 100)
-      : 0;
+          <View style={styles.courseInfo}>
+            <Text style={styles.courseTitle}>
+              {course.courseCode} - {course.courseName}
+            </Text>
+            <Text style={styles.className}>Class name: {course.className}</Text>
+            <Text style={styles.dateRange}>Start date: {course.startDate}</Text>
+            <Text style={styles.dateRange}>End date: {course.endDate}</Text>
+            <Text style={[styles.attendedText, { color: statusColor }]}>
+              Attended: {course.attended}/{course.total}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <LinearGradient colors={["#1890ff", "#40a9ff"]} style={styles.header}>
+      <LinearGradient colors={["#ff8c00", "#ffa500"]} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -323,57 +200,43 @@ export default function AttendancePage() {
           >
             <AntDesign name="arrowleft" size={24} color="#fff" />
           </TouchableOpacity>
-          <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>View Attendance</Text>
-            <Text style={styles.headerSubtitle}>
-              {auth?.userProfile?.userName || "Student"} (
-              {auth?.userProfile?.code || "Student Code"})
-            </Text>
-          </View>
+          <Text style={styles.headerTitle}>Attendance Report</Text>
           <View style={{ width: 24 }} />
         </View>
       </LinearGradient>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Course Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Select Course</Text>
-          <View style={styles.coursesContainer}>
-            {semesters[0].courses.map((course) => renderCourseItem(course))}
+      <View style={styles.content}>
+        {/* Semester Selection */}
+        <View style={styles.semesterContainer}>
+          <View style={styles.semesterButtons}>
+            {semesters.map((semester) => (
+              <TouchableOpacity
+                key={semester.id}
+                style={[
+                  styles.semesterButton,
+                  semester.isActive && styles.activeSemesterButton,
+                ]}
+                onPress={() => setSelectedSemester(semester.id)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.semesterButtonText,
+                    semester.isActive && styles.activeSemesterButtonText,
+                  ]}
+                >
+                  {semester.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
-        {/* Statistics Summary */}
-        <View style={styles.section}>
-          <View style={styles.summaryContainer}>
-            <Text style={styles.summaryText}>
-              ABSENT: {absentPercentage}% ABSENT SO FAR ({absentSessions} ABSENT
-              ON {completedSessions} TOTAL).
-            </Text>
-          </View>
+        {/* Course Attendance Cards */}
+        <View style={styles.cardsContainer}>
+          {courseAttendanceData.map((course) => renderCourseCard(course))}
         </View>
-
-        {/* Attendance Table */}
-        <View style={styles.section}>
-          <View style={styles.tableContainer}>
-            {/* Table Header */}
-            <View style={styles.tableHeader}>
-              <Text style={styles.headerCell}>NO.</Text>
-              <Text style={styles.headerCell}>DATE</Text>
-              <Text style={styles.headerCell}>SLOT</Text>
-              <Text style={styles.headerCell}>ROOM</Text>
-              <Text style={styles.headerCell}>LECTURER</Text>
-              <Text style={styles.headerCell}>GROUP</Text>
-              <Text style={styles.headerCell}>STATUS</Text>
-            </View>
-
-            {/* Table Body */}
-            <View style={styles.tableBody}>
-              {attendanceData.map((record) => renderAttendanceRecord(record))}
-            </View>
-          </View>
-        </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -396,187 +259,130 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 5,
   },
-  headerInfo: {
-    flex: 1,
-    alignItems: "center",
-  },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#fff",
-    opacity: 0.9,
   },
   content: {
     flex: 1,
     paddingHorizontal: 12,
+    paddingBottom: 20,
   },
-  section: {
-    marginBottom: 16,
+  semesterContainer: {
+    marginVertical: 16,
+    paddingHorizontal: 4,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#262626",
-    marginBottom: 8,
-  },
-  coursesContainer: {
+  semesterButtons: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
+    justifyContent: "space-between",
+    gap: 6,
+  },
+  semesterButton: {
+    flex: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderRadius: 20,
     backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e8e8e8",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  courseItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    backgroundColor: "#fafafa",
+  activeSemesterButton: {
+    backgroundColor: "#ff8c00",
+    borderColor: "#ff8c00",
+    shadowColor: "#ff8c00",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  semesterButtonText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#666",
+  },
+  activeSemesterButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  cardsContainer: {
+    gap: 12,
+    flex: 1,
+  },
+  courseCard: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
     borderWidth: 1,
     borderColor: "#f0f0f0",
   },
-  activeCourseItem: {
-    backgroundColor: "#e6f7ff",
-    borderColor: "#1890ff",
-  },
-  courseCode: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#262626",
-  },
-  activeCourseCode: {
-    color: "#1890ff",
-  },
-  courseName: {
-    fontSize: 10,
-    color: "#8c8c8c",
-    marginTop: 2,
-  },
-  summaryContainer: {
-    backgroundColor: "#fff2f0",
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: "#ff4d4f",
-  },
-  summaryText: {
-    fontSize: 14,
-    color: "#ff4d4f",
-    fontWeight: "500",
-    textAlign: "center",
-  },
-  tableContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-    overflow: "hidden",
-  },
-  tableHeader: {
+  cardContent: {
     flexDirection: "row",
-    backgroundColor: "#1890ff",
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-  },
-  headerCell: {
-    flex: 1,
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-  },
-  tableBody: {
-    backgroundColor: "#fff",
-  },
-  recordRow: {
-    flexDirection: "row",
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
     alignItems: "center",
   },
-  recordNumber: {
-    flex: 0.5,
-    alignItems: "center",
+  progressSection: {
+    marginRight: 12,
   },
-  recordNumberText: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#1890ff",
-  },
-  recordDate: {
-    flex: 1,
-    alignItems: "center",
-  },
-  dateText: {
-    fontSize: 9,
-    color: "#262626",
-    textAlign: "center",
-  },
-  recordSlot: {
-    flex: 1,
-    alignItems: "center",
-  },
-  slotText: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: "#262626",
-  },
-  timeText: {
-    fontSize: 8,
-    color: "#8c8c8c",
-  },
-  recordRoom: {
-    flex: 0.8,
-    alignItems: "center",
-  },
-  roomText: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: "#262626",
-    textAlign: "center",
-  },
-  recordLecturer: {
-    flex: 1,
-    alignItems: "center",
-  },
-  lecturerText: {
-    fontSize: 9,
-    color: "#262626",
-    textAlign: "center",
-  },
-  recordGroup: {
-    flex: 1,
-    alignItems: "center",
-  },
-  groupText: {
-    fontSize: 8,
-    color: "#8c8c8c",
-    textAlign: "center",
-  },
-  recordStatus: {
-    flex: 1,
-    flexDirection: "row",
+  progressContainer: {
+    position: "relative",
     alignItems: "center",
     justifyContent: "center",
   },
-  statusText: {
-    fontSize: 9,
+  progressCircle: {
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  progressBackground: {
+    position: "absolute",
+    backgroundColor: "#f0f0f0",
+  },
+  progressArc: {
+    position: "absolute",
+  },
+  progressTextContainer: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  progressText: {
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  courseInfo: {
+    flex: 1,
+  },
+  courseTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#1890ff",
+    marginBottom: 4,
+  },
+  className: {
+    fontSize: 11,
+    color: "#666",
+    marginBottom: 2,
     fontWeight: "500",
-    marginLeft: 2,
+  },
+  dateRange: {
+    fontSize: 10,
+    color: "#888",
+    marginBottom: 2,
+  },
+  attendedText: {
+    fontSize: 11,
+    fontWeight: "bold",
+    marginTop: 4,
   },
 });
