@@ -7,10 +7,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  View,
+  TouchableOpacity,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { selectAuthLogin } from "../../../lib/features/loginSlice";
+import { AntDesign } from "@expo/vector-icons";
 
 export default function HomePage() {
   const insets = useSafeAreaInsets();
@@ -27,28 +30,28 @@ export default function HomePage() {
 
   const quickActions = [
     {
+      title: "Student Portal",
+      icon: "user",
+      color: "#1890ff",
+      onPress: () => router.push("/(drawer)/(tabs)/student-home" as any),
+    },
+    {
+      title: "Thời khóa biểu",
+      icon: "calendar",
+      color: "#52c41a",
+      onPress: () => router.push("/(drawer)/(tabs)/timetable" as any),
+    },
+    {
+      title: "Điểm danh",
+      icon: "checkcircle",
+      color: "#fa8c16",
+      onPress: () => router.push("/(drawer)/(tabs)/attendance" as any),
+    },
+    {
       title: "Chấm công",
       icon: "clock-circle",
       color: "#4CAF50",
       onPress: () => router.push("/timesheet" as any),
-    },
-    {
-      title: "Tạo đơn",
-      icon: "form",
-      color: "#2196F3",
-      onPress: () => router.push("/(drawer)/(tabs)/create-form" as any),
-    },
-    {
-      title: "Bảng lương",
-      icon: "dollar-circle",
-      color: "#FF9800",
-      onPress: () => router.push("/(drawer)/(tabs)/salary" as any),
-    },
-    {
-      title: "Thông báo",
-      icon: "bell",
-      color: "#F44336",
-      onPress: () => router.push("/(drawer)/notifications" as any),
     },
   ];
 
@@ -82,14 +85,52 @@ export default function HomePage() {
       }
     >
       <LinearGradient colors={["#3674B5", "#2196F3"]} style={styles.header}>
-        <Text style={styles.headerTitle}>Header!</Text>
-        <Text style={styles.headerSubtitle}>Mô tả</Text>
-      </LinearGradient>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 15 }}>
-          Trang chủ
+        <Text style={styles.headerTitle}>Chào mừng!</Text>
+        <Text style={styles.headerSubtitle}>
+          {auth?.userProfile?.userName || "Người dùng"}
         </Text>
-      </ScrollView>
+      </LinearGradient>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionTitle}>Truy cập nhanh</Text>
+
+        <View style={styles.quickActionsGrid}>
+          {quickActions.map((action, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.quickActionCard}
+              onPress={action.onPress}
+            >
+              <View
+                style={[
+                  styles.quickActionIcon,
+                  { backgroundColor: action.color },
+                ]}
+              >
+                <AntDesign name={action.icon as any} size={24} color="#fff" />
+              </View>
+              <Text style={styles.quickActionTitle}>{action.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={styles.welcomeCard}>
+          <Text style={styles.welcomeTitle}>Hệ thống FAP Blockchain</Text>
+          <Text style={styles.welcomeDescription}>
+            Quản lý credentials và chứng chỉ học tập của bạn một cách an toàn và
+            minh bạch
+          </Text>
+          <TouchableOpacity
+            style={styles.studentPortalButton}
+            onPress={() => router.push("/(drawer)/(tabs)/student-home" as any)}
+          >
+            <Text style={styles.studentPortalButtonText}>
+              Truy cập Student Portal
+            </Text>
+            <AntDesign name="arrowright" size={16} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -117,5 +158,80 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+    color: "#262626",
+  },
+  quickActionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 24,
+  },
+  quickActionCard: {
+    width: "48%",
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quickActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  quickActionTitle: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#262626",
+    textAlign: "center",
+  },
+  welcomeCard: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  welcomeTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#262626",
+    marginBottom: 8,
+  },
+  welcomeDescription: {
+    fontSize: 14,
+    color: "#8c8c8c",
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  studentPortalButton: {
+    backgroundColor: "#1890ff",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  studentPortalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
   },
 });

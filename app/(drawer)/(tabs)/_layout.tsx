@@ -246,6 +246,34 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="timetable"
+        options={{
+          title: "Thời khóa biểu",
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabBarIcon
+              focused={focused}
+              name="calendar"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="attendance"
+        options={{
+          title: "Điểm danh",
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabBarIcon
+              focused={focused}
+              name="checkcircle"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="menu-2"
         options={{
           title: "Menu 2",

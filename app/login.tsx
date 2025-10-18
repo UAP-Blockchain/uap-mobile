@@ -5,7 +5,6 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +16,16 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import Animated, {
+  Extrapolate,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Toast from "react-native-toast-message";
@@ -43,9 +52,36 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = React.useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const dispatch = useDispatch();
+
+  // Animation values
+  const boyAnimation = useSharedValue(0);
+  const formAnimation = useSharedValue(0);
+  const inputAnimation = useSharedValue(0);
+  const buttonAnimation = useSharedValue(0);
+  const fadeAnimation = useSharedValue(0);
+
+  useEffect(() => {
+    // Start animations on mount
+    fadeAnimation.value = withTiming(1, { duration: 800 });
+    boyAnimation.value = withDelay(
+      300,
+      withSpring(1, { damping: 8, stiffness: 100 })
+    );
+    formAnimation.value = withDelay(
+      600,
+      withSpring(1, { damping: 8, stiffness: 100 })
+    );
+    inputAnimation.value = withDelay(
+      900,
+      withSpring(1, { damping: 8, stiffness: 100 })
+    );
+    buttonAnimation.value = withDelay(
+      1200,
+      withSpring(1, { damping: 8, stiffness: 100 })
+    );
+  }, []);
 
   useEffect(() => {
     const handleIsLogin = async () => {
@@ -68,7 +104,7 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
           }
         }
       } catch (error) {
-        console.error("Error checking login status:", error); // Ensure error is logged
+        console.error("Error checking login status:", error);
         await AsyncStorage.multiRemove(["token", "userData"]);
       }
     };
@@ -105,20 +141,14 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
   };
 
   const handleLogin = async () => {
+    // Button press animation
+    buttonAnimation.value = withSequence(
+      withTiming(0.95, { duration: 100 }),
+      withSpring(1, { damping: 8, stiffness: 100 })
+    );
+
     try {
       console.log("Logging in with:", { userName, password });
-      // const response = await AuthenServices.loginUser({
-      //   username: userName,
-      //   password,
-      // });
-      // Toast.show({
-      //   type: "success",
-      //   text1: "Đăng nhập thành công!",
-      //   text1Style: { textAlign: "center", fontSize: 16 },
-      // });
-      // console.log("Login response:", response.data.userProfile);
-      // await AsyncStorage.setItem("token", response.data.accessToken);
-      // dispatch(setAuthData(response.data));
       router.replace("/(drawer)" as any);
     } catch (error: any) {
       Toast.show({
@@ -131,6 +161,80 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
     }
   };
 
+  // Animated styles
+  const boyAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scale: interpolate(
+            boyAnimation.value,
+            [0, 1],
+            [0.8, 1],
+            Extrapolate.CLAMP
+          ),
+        },
+        {
+          translateY: interpolate(
+            boyAnimation.value,
+            [0, 1],
+            [30, 0],
+            Extrapolate.CLAMP
+          ),
+        },
+      ],
+      opacity: boyAnimation.value,
+    };
+  });
+
+  const formAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(
+            formAnimation.value,
+            [0, 1],
+            [100, 0],
+            Extrapolate.CLAMP
+          ),
+        },
+      ],
+      opacity: formAnimation.value,
+    };
+  });
+
+  const inputAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scale: interpolate(
+            inputAnimation.value,
+            [0, 1],
+            [0.8, 1],
+            Extrapolate.CLAMP
+          ),
+        },
+      ],
+      opacity: inputAnimation.value,
+    };
+  });
+
+  const buttonAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scale: buttonAnimation.value,
+        },
+      ],
+      opacity: buttonAnimation.value,
+    };
+  });
+
+  const fadeAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: fadeAnimation.value,
+    };
+  });
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -138,52 +242,63 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={[styles.container, { marginBottom: keyboardOffset }]}>
+        <Animated.View
+          style={[
+            styles.container,
+            { marginBottom: keyboardOffset },
+            fadeAnimatedStyle,
+          ]}
+        >
           <StatusBar barStyle="light-content" />
           <LinearGradient
-            colors={["#3674B5", "#2196F3"]}
+            colors={["#4A90E2", "#357ABD"]}
             style={styles.gradientContainer}
           >
             <SafeAreaView style={styles.safeArea}>
-              {/* Logo and Header */}
-              <View style={styles.headerContainer}>
-                <Image
-                  source={require("@/assets/images/react-logo.png")}
-                  style={styles.logo}
-                />
-                <Text style={styles.appTitle}>Header nè</Text>
-                <Text style={styles.appSubtitle}>Mô tả nè</Text>
-              </View>
+              {/* Header with FAP-Blockchain Text */}
+              <Animated.View style={[styles.headerContainer, boyAnimatedStyle]}>
+                <View style={styles.logoContainer}>
+                  <Text style={styles.logoText}>FAP</Text>
+                  <Text style={styles.logoSubText}>Blockchain</Text>
+                  <View style={styles.logoDivider} />
+                  <Text style={styles.taglineText}>
+                    Secure • Fast • Reliable
+                  </Text>
+                </View>
+              </Animated.View>
             </SafeAreaView>
 
             {/* Login Form */}
-            <View style={styles.formContainer}>
+            <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
               <View style={styles.formCard}>
-                <Text style={styles.welcomeText}>Chào mừng trở lại!</Text>
-                <Text style={styles.loginPrompt}>Đăng nhập để tiếp tục</Text>
+                <Text style={styles.loginTitle}>Login with Password</Text>
 
-                <View style={styles.inputContainer}>
+                <Animated.View
+                  style={[styles.inputContainer, inputAnimatedStyle]}
+                >
                   <View style={styles.iconContainer}>
-                    <Feather name="user" size={20} color="#3674B5" />
+                    <Feather name="user" size={20} color="#4A90E2" />
                   </View>
                   <TextInput
                     onChangeText={setUserName}
                     value={userName}
-                    placeholder="Tên đăng nhập"
+                    placeholder="Username"
                     placeholderTextColor="#999"
                     style={styles.input}
                     autoCapitalize="none"
                   />
-                </View>
+                </Animated.View>
 
-                <View style={styles.inputContainer}>
+                <Animated.View
+                  style={[styles.inputContainer, inputAnimatedStyle]}
+                >
                   <View style={styles.iconContainer}>
-                    <Feather name="lock" size={20} color="#3674B5" />
+                    <Feather name="lock" size={20} color="#4A90E2" />
                   </View>
                   <TextInput
                     onChangeText={setPassword}
                     value={password}
-                    placeholder="Mật khẩu"
+                    placeholder="Password"
                     placeholderTextColor="#999"
                     style={styles.input}
                     secureTextEntry={!isPasswordVisible}
@@ -195,61 +310,26 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
                     <Feather
                       name={isPasswordVisible ? "eye" : "eye-off"}
                       size={20}
-                      color="#3674B5"
+                      color="#4A90E2"
                     />
                   </TouchableOpacity>
-                </View>
+                </Animated.View>
 
-                <View style={styles.optionsRow}>
-                  <TouchableOpacity
-                    style={styles.rememberContainer}
-                    onPress={() => setRememberMe(!rememberMe)}
-                  >
-                    <View
-                      style={[
-                        styles.checkbox,
-                        rememberMe && styles.checkboxActive,
-                      ]}
-                    >
-                      {rememberMe && (
-                        <Feather name="check" size={12} color="#fff" />
-                      )}
-                    </View>
-                    <Text style={styles.rememberText}>Nhớ mật khẩu</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity>
-                    <Text style={styles.forgotText}>Quên mật khẩu?</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity
-                  style={styles.loginButton}
-                  onPress={handleLogin}
-                  activeOpacity={0.8}
+                <Animated.View
+                  style={[styles.loginButtonContainer, buttonAnimatedStyle]}
                 >
-                  <LinearGradient
-                    colors={["#3674B5", "#2196F3"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.buttonGradient}
+                  <TouchableOpacity
+                    style={styles.loginButton}
+                    onPress={handleLogin}
+                    activeOpacity={0.8}
                   >
-                    <Text style={styles.buttonText}>ĐĂNG NHẬP</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                <View style={styles.footerContainer}>
-                  <Text style={styles.footerText}>
-                    Chưa có tài khoản?{" "}
-                    <TouchableOpacity>
-                      <Text style={styles.registerText}>Đăng ký</Text>
-                    </TouchableOpacity>
-                  </Text>
-                </View>
+                    <Text style={styles.buttonText}>LOG IN</Text>
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
-            </View>
+            </Animated.View>
           </LinearGradient>
-        </View>
+        </Animated.View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
@@ -268,59 +348,86 @@ const styles = StyleSheet.create({
   headerContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginTop: height * 0.05,
+    paddingTop: height * 0.06,
+    paddingBottom: height * 0.04,
+    height: height * 0.4,
   },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 16,
+  // Logo Container Styles
+  logoContainer: {
+    alignItems: "center",
+    justifyContent: "center",
   },
-  appTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
+  logoText: {
+    fontSize: 48,
+    fontWeight: "900",
     color: "#fff",
-    marginBottom: 4,
+    textAlign: "center",
+    letterSpacing: 2,
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
-  appSubtitle: {
-    fontSize: 16,
+  logoSubText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "rgba(255, 255, 255, 0.9)",
+    textAlign: "center",
+    letterSpacing: 1,
+    marginTop: -5,
+    textShadowColor: "rgba(0, 0, 0, 0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  logoDivider: {
+    width: 60,
+    height: 3,
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    borderRadius: 2,
+    marginVertical: 16,
+  },
+  taglineText: {
+    fontSize: 14,
+    fontWeight: "400",
     color: "rgba(255, 255, 255, 0.8)",
+    textAlign: "center",
+    letterSpacing: 0.5,
   },
+  // Form Styles
   formContainer: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-end",
     alignItems: "center",
-    marginTop: -height * 0.08,
+    paddingBottom: height * 0.08,
+    paddingHorizontal: 20,
   },
   formCard: {
     width: width * 0.9,
     backgroundColor: "#fff",
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 24,
-    elevation: 4,
+    elevation: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    marginBottom: 20,
   },
-  welcomeText: {
-    fontSize: 22,
+  loginTitle: {
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#3674B5",
-    marginBottom: 8,
-  },
-  loginPrompt: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 24,
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 32,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: "#E0E0E0",
     borderRadius: 12,
     marginBottom: 16,
     height: 56,
+    backgroundColor: "#fff",
   },
   iconContainer: {
     paddingHorizontal: 16,
@@ -334,64 +441,26 @@ const styles = StyleSheet.create({
   eyeButton: {
     paddingHorizontal: 16,
   },
-  optionsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  rememberContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "#3674B5",
-    marginRight: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checkboxActive: {
-    backgroundColor: "#3674B5",
-  },
-  rememberText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  forgotText: {
-    fontSize: 14,
-    color: "#3674B5",
-    fontWeight: "500",
+  loginButtonContainer: {
+    marginTop: 8,
   },
   loginButton: {
-    marginBottom: 24,
+    backgroundColor: "#4A90E2",
     borderRadius: 12,
-    overflow: "hidden",
-  },
-  buttonGradient: {
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
+    elevation: 2,
+    shadowColor: "#4A90E2",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   buttonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
     letterSpacing: 1,
-  },
-  footerContainer: {
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  registerText: {
-    color: "#3674B5",
-    fontWeight: "500",
   },
 });
 
