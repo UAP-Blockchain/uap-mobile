@@ -193,7 +193,7 @@ export default function AttendancePage() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <LinearGradient colors={["#ff8c00", "#ffa500"]} style={styles.header}>
+      <LinearGradient colors={["#3674B5", "#1890ff"]} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -295,9 +295,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   activeSemesterButton: {
-    backgroundColor: "#ff8c00",
-    borderColor: "#ff8c00",
-    shadowColor: "#ff8c00",
+    backgroundColor: "#3674B5",
+    borderColor: "#3674B5",
+    shadowColor: "#3674B5",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

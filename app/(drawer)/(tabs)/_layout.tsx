@@ -256,6 +256,18 @@ export default function TabLayout() {
           tabBarButton: renderMenuButton,
         }}
       />
+      <Tabs.Screen
+        name="student-home"
+        options={{
+          href: null, // Ẩn tab này khỏi tab bar nhưng vẫn có thể điều hướng từ code
+        }}
+      />
+      <Tabs.Screen
+        name="attendance-detail"
+        options={{
+          href: null, // Ẩn tab này khỏi tab bar nhưng vẫn có thể điều hướng từ code
+        }}
+      />
     </Tabs>
   );
 }
