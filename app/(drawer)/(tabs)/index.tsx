@@ -30,28 +30,28 @@ export default function HomePage() {
 
   const quickActions = [
     {
-      title: "Student Portal",
-      icon: "user",
-      color: "#1890ff",
-      onPress: () => router.push("/(drawer)/(tabs)/student-home" as any),
-    },
-    {
-      title: "Thời khóa biểu",
+      title: "Timetable",
       icon: "calendar",
-      color: "#52c41a",
+      color: "#3674B5",
       onPress: () => router.push("/(drawer)/(tabs)/timetable" as any),
     },
     {
-      title: "Điểm danh",
+      title: "Attendance",
       icon: "checkcircle",
-      color: "#fa8c16",
+      color: "#3674B5",
       onPress: () => router.push("/(drawer)/(tabs)/attendance" as any),
     },
     {
-      title: "Chấm công",
-      icon: "clock-circle",
-      color: "#4CAF50",
-      onPress: () => router.push("/timesheet" as any),
+      title: "Mark Report",
+      icon: "filetext1",
+      color: "#3674B5",
+      onPress: () => router.push("/(drawer)/(tabs)/attendance" as any),
+    },
+    {
+      title: "Certificate",
+      icon: "SafetyCertificate",
+      color: "#3674B5",
+      onPress: () => router.push("/(drawer)/(tabs)/student-home" as any),
     },
   ];
 
@@ -62,9 +62,9 @@ export default function HomePage() {
       // Simulate API call to refresh dashboard data
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      Alert.alert("Thành công", "Dữ liệu trang chủ đã được cập nhật!");
+      Alert.alert("Success", "Home data has been updated!");
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể tải dữ liệu. Vui lòng thử lại.");
+      Alert.alert("Error", "Unable to load data. Please try again.");
     } finally {
       setRefreshing(false);
     }
@@ -79,20 +79,20 @@ export default function HomePage() {
           onRefresh={onRefresh}
           colors={["#3674B5"]}
           tintColor="#3674B5"
-          title="Đang tải..."
+          title="Loading..."
           titleColor="#3674B5"
         />
       }
     >
       <LinearGradient colors={["#3674B5", "#2196F3"]} style={styles.header}>
-        <Text style={styles.headerTitle}>Chào mừng!</Text>
+        <Text style={styles.headerTitle}>Welcome!</Text>
         <Text style={styles.headerSubtitle}>
-          {auth?.userProfile?.userName || "Người dùng"}
+          {auth?.userProfile?.userName || "User"}
         </Text>
       </LinearGradient>
 
       <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Truy cập nhanh</Text>
+        <Text style={styles.sectionTitle}>Quick Access</Text>
 
         <View style={styles.quickActionsGrid}>
           {quickActions.map((action, index) => (
@@ -115,17 +115,17 @@ export default function HomePage() {
         </View>
 
         <View style={styles.welcomeCard}>
-          <Text style={styles.welcomeTitle}>Hệ thống FAP Blockchain</Text>
+          <Text style={styles.welcomeTitle}>FAP Blockchain System</Text>
           <Text style={styles.welcomeDescription}>
-            Quản lý credentials và chứng chỉ học tập của bạn một cách an toàn và
-            minh bạch
+            Manage your credentials and academic certificates securely and
+            transparently
           </Text>
           <TouchableOpacity
             style={styles.studentPortalButton}
             onPress={() => router.push("/(drawer)/(tabs)/student-home" as any)}
           >
             <Text style={styles.studentPortalButtonText}>
-              Truy cập Student Portal
+              Access Student Portal
             </Text>
             <AntDesign name="arrowright" size={16} color="#fff" />
           </TouchableOpacity>
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   studentPortalButton: {
-    backgroundColor: "#1890ff",
+    backgroundColor: "#3674B5",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

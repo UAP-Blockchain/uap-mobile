@@ -249,7 +249,7 @@ export default function TimetablePage() {
           <View style={styles.classFooter}>
             <View style={styles.attendanceContainer}>
               <AntDesign
-                name={getAttendanceIcon(classInfo.attendance)}
+                name={getAttendanceIcon(classInfo.attendance) as any}
                 size={14}
                 color={getAttendanceColor(classInfo.attendance)}
               />
@@ -267,7 +267,7 @@ export default function TimetablePage() {
               onPress={() => handleViewDetails(classInfo)}
             >
               <Text style={styles.detailsButtonText}>Chi tiết</Text>
-              <AntDesign name="right" size={12} color="#1890ff" />
+              <AntDesign name="right" size={12} color="#3674B5" />
             </TouchableOpacity>
           </View>
         </View>
@@ -307,7 +307,7 @@ export default function TimetablePage() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <LinearGradient colors={["#1890ff", "#40a9ff"]} style={styles.header}>
+      <LinearGradient colors={["#3674B5", "#1890ff"]} style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerInfo}>
             <Text style={styles.headerTitle}>Thời Khóa Biểu</Text>
@@ -352,15 +352,19 @@ export default function TimetablePage() {
         <Text style={styles.legendTitle}>Chú thích:</Text>
         <View style={styles.legendItems}>
           <View style={styles.legendItem}>
-            <AntDesign name="checkcircleo" size={12} color="#52c41a" />
+            <AntDesign name={"checkcircleo" as any} size={12} color="#52c41a" />
             <Text style={styles.legendText}>Đã tham gia</Text>
           </View>
           <View style={styles.legendItem}>
-            <AntDesign name="closecircleo" size={12} color="#ff4d4f" />
+            <AntDesign name={"closecircleo" as any} size={12} color="#ff4d4f" />
             <Text style={styles.legendText}>Vắng mặt</Text>
           </View>
           <View style={styles.legendItem}>
-            <AntDesign name="exclamationcircleo" size={12} color="#faad14" />
+            <AntDesign
+              name={"exclamationcircleo" as any}
+              size={12}
+              color="#faad14"
+            />
             <Text style={styles.legendText}>Chưa đến</Text>
           </View>
         </View>
@@ -453,7 +457,7 @@ const styles = StyleSheet.create({
     color: "#8c8c8c",
   },
   classCount: {
-    backgroundColor: "#1890ff",
+    backgroundColor: "#3674B5",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -481,7 +485,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: "#1890ff",
+    borderLeftColor: "#3674B5",
   },
   classCardContent: {
     padding: 16,
@@ -498,7 +502,7 @@ const styles = StyleSheet.create({
   courseCode: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#1890ff",
+    color: "#3674B5",
     marginBottom: 4,
   },
   courseName: {
@@ -514,7 +518,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 12,
-    color: "#1890ff",
+    color: "#3674B5",
     fontWeight: "500",
   },
   classDetails: {
@@ -552,7 +556,7 @@ const styles = StyleSheet.create({
   },
   detailsButtonText: {
     fontSize: 12,
-    color: "#1890ff",
+    color: "#3674B5",
     fontWeight: "500",
     marginRight: 4,
   },
