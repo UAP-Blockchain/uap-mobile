@@ -3,4 +3,5 @@ export interface dtoUserInfor {
   code: string;
   userName: string;
   password?: string;
+  role?: "STUDENT" | "VERIFIER" | "GUEST";
 }

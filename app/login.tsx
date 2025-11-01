@@ -88,17 +88,23 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
       try {
         const token = await AsyncStorage.getItem("token");
         const userData = await AsyncStorage.getItem("userData");
+        const role = await AsyncStorage.getItem("role");
         if (token && userData) {
           // Check if token is still valid
-          if (isTokenValid(token)) {
-            // Token is valid, auto login
-            router.replace("/(drawer)" as any);
+          if (isTokenValid(token) || token.startsWith("mock_token")) {
+            // Token is valid, auto login - redirect based on role
+            if (role === "VERIFIER" || role === "GUEST") {
+              router.replace("/(drawer)/(tabs)/verifier" as any);
+            } else {
+              router.replace("/(drawer)/(tabs)" as any);
+            }
           } else {
             // Token expired, clear storage
-            await AsyncStorage.multiRemove(["token", "userData"]);
+            await AsyncStorage.multiRemove(["token", "userData", "role"]);
             Toast.show({
               type: "info",
-              text1: "Phiên đăng nhập đã hết hạn",
+              text1: "Session expired",
+              text2: "Please login again",
               text1Style: { textAlign: "center", fontSize: 16 },
             });
           }
@@ -148,14 +154,76 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
     );
 
     try {
-      console.log("Logging in with:", { userName, password });
-      router.replace("/(drawer)" as any);
+      // Mock authentication for demo
+      const mockUsers = {
+        student: {
+          username: "student",
+          password: "123",
+          role: "STUDENT" as const,
+          userProfile: {
+            id: "1",
+            code: "ST001",
+            userName: "Student User",
+            role: "STUDENT" as const,
+          },
+        },
+        guest: {
+          username: "guest",
+          password: "123",
+          role: "VERIFIER" as const,
+          userProfile: {
+            id: "2",
+            code: "GUEST001",
+            userName: "Verifier User",
+            role: "VERIFIER" as const,
+          },
+        },
+      };
+
+      // Find matching user
+      const userKey = userName.toLowerCase();
+      const user =
+        mockUsers[userKey as keyof typeof mockUsers] ||
+        (userKey === "guest" ? mockUsers.guest : null);
+
+      if (!user || password !== user.password) {
+        Toast.show({
+          type: "error",
+          text1: "Invalid credentials",
+          text2: "Please check your username and password",
+          text1Style: { textAlign: "center", fontSize: 16 },
+        });
+        return;
+      }
+
+      // Save to AsyncStorage
+      const mockToken = `mock_token_${user.role}_${Date.now()}`;
+      await AsyncStorage.setItem("token", mockToken);
+      await AsyncStorage.setItem("userData", JSON.stringify(user.userProfile));
+      await AsyncStorage.setItem("role", user.role);
+
+      // Dispatch to Redux
+      dispatch({
+        type: "auth/setAuthData",
+        payload: {
+          accessToken: mockToken,
+          refreshToken: `refresh_${mockToken}`,
+          userProfile: user.userProfile,
+        },
+      });
+
+      console.log("Login successful:", user.role);
+
+      // Redirect based on role
+      if (user.role === "STUDENT") {
+        router.replace("/(drawer)/(tabs)" as any);
+      } else if (user.role === "VERIFIER") {
+        router.replace("/(drawer)/(tabs)/verifier" as any);
+      }
     } catch (error: any) {
       Toast.show({
         type: "error",
-        text1: `Đăng nhập thất bại: ${
-          error.response?.data?.message || error.message
-        }`,
+        text1: `Login failed: ${error.message || "Unknown error"}`,
         text1Style: { textAlign: "center", fontSize: 16 },
       });
     }
@@ -255,10 +323,10 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
             style={styles.gradientContainer}
           >
             <SafeAreaView style={styles.safeArea}>
-              {/* Header with FAP-Blockchain Text */}
+              {/* Header with UAP-Blockchain Text */}
               <Animated.View style={[styles.headerContainer, boyAnimatedStyle]}>
                 <View style={styles.logoContainer}>
-                  <Text style={styles.logoText}>FAP</Text>
+                  <Text style={styles.logoText}>UAP</Text>
                   <Text style={styles.logoSubText}>Blockchain</Text>
                   <View style={styles.logoDivider} />
                   <Text style={styles.taglineText}>

@@ -14,11 +14,26 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { selectAuthLogin } from "../../../lib/features/loginSlice";
 import { AntDesign } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomePage() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const auth = useSelector(selectAuthLogin);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadRole = async () => {
+      const role = await AsyncStorage.getItem("role");
+      setUserRole(role);
+
+      // If user is VERIFIER/GUEST, redirect to verifier portal
+      if (role === "VERIFIER" || role === "GUEST") {
+        router.replace("/(drawer)/(tabs)/verifier" as any);
+      }
+    };
+    loadRole();
+  }, [auth]);
 
   useEffect(() => {
     console.log("HomePage mounted", auth);
@@ -115,7 +130,7 @@ export default function HomePage() {
         </View>
 
         <View style={styles.welcomeCard}>
-          <Text style={styles.welcomeTitle}>FAP Blockchain System</Text>
+          <Text style={styles.welcomeTitle}>UAP Blockchain System</Text>
           <Text style={styles.welcomeDescription}>
             Manage your credentials and academic certificates securely and
             transparently
@@ -127,7 +142,7 @@ export default function HomePage() {
             <Text style={styles.studentPortalButtonText}>
               Access Student Portal
             </Text>
-            <AntDesign name="arrowright" size={16} color="#fff" />
+            <AntDesign name={"arrowright" as any} size={16} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>

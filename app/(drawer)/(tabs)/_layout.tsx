@@ -2,8 +2,11 @@ import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Tabs, router } from "expo-router";
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSelector } from "react-redux";
+import { selectAuthLogin } from "../../../lib/features/loginSlice";
 
 // import { useNotification } from '@/contexts/NotificationContext';
 
@@ -119,6 +122,26 @@ export default function TabLayout() {
   // const { notificationCount } = useNotification();
   const notificationCount = 0; // Temporary placeholder
   const navigation = useNavigation();
+  const auth = useSelector(selectAuthLogin);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadRole = async () => {
+      const role =
+        (await AsyncStorage.getItem("role")) || auth?.userProfile?.role;
+      if (role) {
+        setUserRole(role);
+      }
+    };
+    loadRole();
+  }, [auth]);
+
+  // Determine if user is verifier/guest - use both sources
+  const isVerifier =
+    userRole === "VERIFIER" ||
+    userRole === "GUEST" ||
+    auth?.userProfile?.role === "VERIFIER" ||
+    auth?.userProfile?.role === "GUEST";
 
   // Custom tab bar components
   const renderTimeSheetTabIcon = useCallback(
@@ -210,7 +233,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Trang chủ",
+          title: "Home",
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               focused={focused}
@@ -221,10 +244,12 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* Timetable - hidden for VERIFIER/GUEST */}
       <Tabs.Screen
         name="timetable"
         options={{
-          title: "Lịch học",
+          title: "Timetable",
+          href: isVerifier ? null : undefined,
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               focused={focused}
@@ -235,14 +260,32 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* Attendance - hidden for VERIFIER/GUEST */}
       <Tabs.Screen
         name="attendance"
         options={{
-          title: "Điểm danh",
+          title: "Attendance",
+          href: isVerifier ? null : undefined,
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               focused={focused}
               name="user"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      {/* Verification History - only visible for VERIFIER/GUEST */}
+      <Tabs.Screen
+        name="verification-history"
+        options={{
+          title: "History",
+          href: isVerifier ? undefined : null,
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabBarIcon
+              focused={focused}
+              name="clockcircle"
               color={color}
               size={size}
             />
@@ -266,6 +309,12 @@ export default function TabLayout() {
         name="attendance-detail"
         options={{
           href: null, // Ẩn tab này khỏi tab bar nhưng vẫn có thể điều hướng từ code
+        }}
+      />
+      <Tabs.Screen
+        name="verifier"
+        options={{
+          href: null, // Ẩn tab này khỏi tab bar, chỉ truy cập được khi role là VERIFIER
         }}
       />
     </Tabs>
