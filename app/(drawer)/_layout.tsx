@@ -23,83 +23,91 @@ export default function DrawerLayout() {
   }, []);
 
   // Custom drawer content
-  const renderDrawerContent = useCallback(
-    (props: any) => {
-      return (
-        <View style={{ flex: 1, paddingTop: 50 }}>
-          <Text
-            style={{
-              padding: 16,
-              fontSize: 20,
-              fontWeight: "bold",
-              color: "#3674B5",
-              borderBottomWidth: 1,
-              borderBottomColor: "#eee",
-              marginTop: 30,
-            }}
-          >
-            Heder
-          </Text>
+  const renderDrawerContent = useCallback((props: any) => {
+    return (
+      <View style={{ flex: 1, paddingTop: 50 }}>
+        <Text
+          style={{
+            padding: 16,
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "#3674B5",
+            borderBottomWidth: 1,
+            borderBottomColor: "#eee",
+            marginTop: 30,
+          }}
+        >
+          Student ...
+        </Text>
 
-          <Pressable
-            onPress={() => router.push("/(drawer)/(tabs)" as any)}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? "#f0f0f0" : "transparent",
-              borderRadius: 8,
-              padding: 16,
-            })}
-          >
-            <Text style={{ fontSize: 16, color: "#333" }}>Trang chủ</Text>
-          </Pressable>
+        <Pressable
+          onPress={() => router.push("/(drawer)/(tabs)" as any)}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Home</Text>
+        </Pressable>
 
-          <Pressable
-            onPress={() => router.push("/(drawer)/(tabs)/timetable" as any)}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? "#f0f0f0" : "transparent",
-              borderRadius: 8,
-              padding: 16,
-            })}
-          >
-            <Text style={{ fontSize: 16, color: "#333" }}>Thời khóa biểu</Text>
-          </Pressable>
+        <Pressable
+          onPress={() => router.push("/(drawer)/(tabs)/student-home" as any)}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Profile</Text>
+        </Pressable>
 
-          <Pressable
-            onPress={() => router.push("/(drawer)/(tabs)/attendance" as any)}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? "#f0f0f0" : "transparent",
-              borderRadius: 8,
-              padding: 16,
-            })}
-          >
-            <Text style={{ fontSize: 16, color: "#333" }}>Điểm danh</Text>
-          </Pressable>
+        <Pressable
+          onPress={() => router.push("/(drawer)/(tabs)/timetable" as any)}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Timetable</Text>
+        </Pressable>
 
-          <Pressable
-            onPress={() => router.push("/timesheet" as any)}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? "#f0f0f0" : "transparent",
-              borderRadius: 8,
-              padding: 16,
-            })}
-          >
-            <Text style={{ fontSize: 16, color: "#333" }}>Chấm công</Text>
-          </Pressable>
+        <Pressable
+          onPress={() => router.push("/(drawer)/(tabs)/attendance" as any)}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Attendance</Text>
+        </Pressable>
 
-          <Pressable
-            onPress={() => router.push("/(drawer)/chat" as any)}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? "#f0f0f0" : "transparent",
-              borderRadius: 8,
-              padding: 16,
-            })}
-          >
-            <Text style={{ fontSize: 16, color: "#333" }}>Chat App</Text>
-          </Pressable>
-        </View>
-      );
-    },
-    [handleLogout, notificationCount]
-  );
+        <Pressable
+          onPress={() => router.push("/timesheet" as any)}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Timesheet</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/(drawer)/chat" as any)}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Chat App</Text>
+        </Pressable>
+      </View>
+    );
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -116,8 +124,8 @@ export default function DrawerLayout() {
         <Drawer.Screen
           name="(tabs)"
           options={{
-            drawerLabel: "Trang chủ",
-            title: "Trang chủ",
+            drawerLabel: "Home",
+            title: "Home",
           }}
         />
         <Drawer.Screen
