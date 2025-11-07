@@ -60,7 +60,7 @@ export default function HomePage() {
       title: "Mark Report",
       icon: "filetext1",
       color: "#3674B5",
-      onPress: () => router.push("/(drawer)/(tabs)/attendance" as any),
+      onPress: () => router.push("/(drawer)/(tabs)/mark-report" as any),
     },
     {
       title: "Certificate",

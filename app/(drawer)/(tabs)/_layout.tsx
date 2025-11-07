@@ -317,6 +317,18 @@ export default function TabLayout() {
           href: null, // Ẩn tab này khỏi tab bar, chỉ truy cập được khi role là VERIFIER
         }}
       />
+      <Tabs.Screen
+        name="mark-report"
+        options={{
+          href: null, // Ẩn tab này khỏi tab bar, chỉ truy cập được từ home
+        }}
+      />
+      <Tabs.Screen
+        name="mark-report-detail"
+        options={{
+          href: null, // Ẩn tab này khỏi tab bar, chỉ truy cập được từ mark-report
+        }}
+      />
     </Tabs>
   );
 }
