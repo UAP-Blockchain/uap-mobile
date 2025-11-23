@@ -1,4 +1,4 @@
 export interface LoginFormValues {
-  username: string; // Backend expects "Email" but service uses "username" field
+  email: string;
   password: string;
 }

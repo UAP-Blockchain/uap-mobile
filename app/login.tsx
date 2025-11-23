@@ -183,7 +183,7 @@ const LoginScreen: React.FC = () => {
     try {
       // Call API
       const response = await AuthenServices.loginUser({
-        username: email,
+        email: email,
         password: password,
       });
 
@@ -309,9 +309,7 @@ const LoginScreen: React.FC = () => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <Animated.View
-          style={[styles.container, fadeAnimatedStyle]}
-        >
+        <Animated.View style={[styles.container, fadeAnimatedStyle]}>
           <StatusBar barStyle="light-content" />
           <View
             style={[
@@ -407,12 +405,7 @@ const LoginScreen: React.FC = () => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
-                        // Navigate to forgot password
-                        Toast.show({
-                          type: "info",
-                          text1: "Tính năng đang phát triển",
-                          text1Style: { textAlign: "center", fontSize: 16 },
-                        });
+                        router.push("/forgot-password");
                       }}
                     >
                       <Text style={styles.forgotPasswordLink}>
@@ -457,10 +450,12 @@ const LoginScreen: React.FC = () => {
                 </LinearGradient>
               </Animated.View>
             )}
-            
+
             {/* Mobile Logo - Top */}
             {width <= 768 && (
-              <Animated.View style={[styles.mobileLogoSection, logoAnimatedStyle]}>
+              <Animated.View
+                style={[styles.mobileLogoSection, logoAnimatedStyle]}
+              >
                 <LinearGradient
                   colors={["#1777ff", "#0d5bc9"]}
                   style={styles.mobileGradientContainer}
