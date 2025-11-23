@@ -12,8 +12,19 @@ api.interceptors.request.use(
     //chạy trước khi call api
     const token = store.getState().auth.accessToken;
     const refreshToken = store.getState().auth.refreshToken;
-    if (!token) {
+    
+    // Skip token check for login and other public endpoints
+    const isPublicEndpoint = config.url?.includes("/login") || 
+                            config.url?.includes("/refresh-token") ||
+                            config.url?.includes("/send-otp") ||
+                            config.url?.includes("/reset-password");
+    
+    if (!token && !isPublicEndpoint) {
       return Promise.reject(new Error("No token"));
+    }
+    
+    if (!token) {
+      return config; // Allow public endpoints without token
     }
     try {
       const base64Url = token.split(".")[1];

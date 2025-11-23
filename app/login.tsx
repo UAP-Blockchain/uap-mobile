@@ -4,10 +4,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -22,20 +24,16 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withDelay,
-  withSequence,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import Toast from "react-native-toast-message";
 import { useDispatch } from "react-redux";
+import { AuthenServices } from "@/services/auth/authenServices";
+import { setAuthData } from "@/lib/features/loginSlice";
 
 const { width, height } = Dimensions.get("window");
-
-export interface ILoginScreenProps {
-  onEyePress?: () => void;
-}
 
 // Token validation utility
 const isTokenValid = (token: string): boolean => {
@@ -48,37 +46,29 @@ const isTokenValid = (token: string): boolean => {
   }
 };
 
-const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
+const LoginScreen: React.FC = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const dispatch = useDispatch();
 
   // Animation values
-  const boyAnimation = useSharedValue(0);
+  const logoAnimation = useSharedValue(0);
   const formAnimation = useSharedValue(0);
-  const inputAnimation = useSharedValue(0);
-  const buttonAnimation = useSharedValue(0);
   const fadeAnimation = useSharedValue(0);
 
   useEffect(() => {
     // Start animations on mount
     fadeAnimation.value = withTiming(1, { duration: 800 });
-    boyAnimation.value = withDelay(
+    logoAnimation.value = withDelay(
       300,
       withSpring(1, { damping: 8, stiffness: 100 })
     );
     formAnimation.value = withDelay(
       600,
-      withSpring(1, { damping: 8, stiffness: 100 })
-    );
-    inputAnimation.value = withDelay(
-      900,
-      withSpring(1, { damping: 8, stiffness: 100 })
-    );
-    buttonAnimation.value = withDelay(
-      1200,
       withSpring(1, { damping: 8, stiffness: 100 })
     );
   }, []);
@@ -103,8 +93,8 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
             await AsyncStorage.multiRemove(["token", "userData", "role"]);
             Toast.show({
               type: "info",
-              text1: "Session expired",
-              text2: "Please login again",
+              text1: "Phiên đăng nhập đã hết hạn",
+              text2: "Vui lòng đăng nhập lại",
               text1Style: { textAlign: "center", fontSize: 16 },
             });
           }
@@ -143,99 +133,135 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
 
   const handleEyePress = () => {
     setPasswordVisible((oldValue) => !oldValue);
-    onEyePress?.();
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
   const handleLogin = async () => {
-    // Button press animation
-    buttonAnimation.value = withSequence(
-      withTiming(0.95, { duration: 100 }),
-      withSpring(1, { damping: 8, stiffness: 100 })
-    );
+    // Validation
+    if (!email.trim()) {
+      Toast.show({
+        type: "error",
+        text1: "Vui lòng nhập email",
+        text1Style: { textAlign: "center", fontSize: 16 },
+      });
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Toast.show({
+        type: "error",
+        text1: "Vui lòng nhập email hợp lệ",
+        text1Style: { textAlign: "center", fontSize: 16 },
+      });
+      return;
+    }
+
+    if (!password.trim()) {
+      Toast.show({
+        type: "error",
+        text1: "Vui lòng nhập mật khẩu",
+        text1Style: { textAlign: "center", fontSize: 16 },
+      });
+      return;
+    }
+
+    if (!remember) {
+      Toast.show({
+        type: "error",
+        text1: "Vui lòng đồng ý với Điều khoản & Quyền riêng tư",
+        text1Style: { textAlign: "center", fontSize: 16 },
+      });
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      // Mock authentication for demo
-      const mockUsers = {
-        student: {
-          username: "student",
-          password: "123",
-          role: "STUDENT" as const,
-          userProfile: {
-            id: "1",
-            code: "ST001",
-            userName: "Student User",
-            role: "STUDENT" as const,
-          },
-        },
-        guest: {
-          username: "guest",
-          password: "123",
-          role: "VERIFIER" as const,
-          userProfile: {
-            id: "2",
-            code: "GUEST001",
-            userName: "Verifier User",
-            role: "VERIFIER" as const,
-          },
-        },
-      };
+      // Call API
+      const response = await AuthenServices.loginUser({
+        username: email,
+        password: password,
+      });
 
-      // Find matching user
-      const userKey = userName.toLowerCase();
-      const user =
-        mockUsers[userKey as keyof typeof mockUsers] ||
-        (userKey === "guest" ? mockUsers.guest : null);
+      // Extract data from response
+      const responseData = response.data;
+      const accessToken = responseData.accessToken;
+      const refreshToken = responseData.refreshToken;
+      const role = responseData.role;
+      const fullName = responseData.fullName;
 
-      if (!user || password !== user.password) {
-        Toast.show({
-          type: "error",
-          text1: "Invalid credentials",
-          text2: "Please check your username and password",
-          text1Style: { textAlign: "center", fontSize: 16 },
-        });
-        return;
+      if (!accessToken || !refreshToken) {
+        throw new Error("Invalid response from server");
       }
 
       // Save to AsyncStorage
-      const mockToken = `mock_token_${user.role}_${Date.now()}`;
-      await AsyncStorage.setItem("token", mockToken);
-      await AsyncStorage.setItem("userData", JSON.stringify(user.userProfile));
-      await AsyncStorage.setItem("role", user.role);
+      await AsyncStorage.setItem("token", accessToken);
+      await AsyncStorage.setItem("refreshToken", refreshToken);
+      await AsyncStorage.setItem("role", role);
+      await AsyncStorage.setItem(
+        "userData",
+        JSON.stringify({
+          email: email,
+          fullName: fullName,
+          role: role,
+        })
+      );
 
       // Dispatch to Redux
-      dispatch({
-        type: "auth/setAuthData",
-        payload: {
-          accessToken: mockToken,
-          refreshToken: `refresh_${mockToken}`,
-          userProfile: user.userProfile,
-        },
-      });
+      dispatch(
+        setAuthData({
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          userProfile: {
+            id: "",
+            code: "",
+            userName: fullName || email,
+            role: role,
+          },
+        })
+      );
 
-      console.log("Login successful:", user.role);
-
-      // Redirect based on role
-      if (user.role === "STUDENT") {
-        router.replace("/(drawer)/(tabs)" as any);
-      } else if (user.role === "VERIFIER") {
-        router.replace("/(drawer)/(tabs)/verifier" as any);
-      }
-    } catch (error: any) {
       Toast.show({
-        type: "error",
-        text1: `Login failed: ${error.message || "Unknown error"}`,
+        type: "success",
+        text1: "Đăng nhập thành công!",
         text1Style: { textAlign: "center", fontSize: 16 },
       });
+
+      // Redirect based on role
+      setTimeout(() => {
+        if (role === "VERIFIER" || role === "GUEST") {
+          router.replace("/(drawer)/(tabs)/verifier" as any);
+        } else {
+          router.replace("/(drawer)/(tabs)" as any);
+        }
+      }, 500);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Đăng nhập thất bại! Vui lòng kiểm tra thông tin đăng nhập.";
+      Toast.show({
+        type: "error",
+        text1: errorMessage,
+        text1Style: { textAlign: "center", fontSize: 16 },
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Animated styles
-  const boyAnimatedStyle = useAnimatedStyle(() => {
+  const logoAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
         {
           scale: interpolate(
-            boyAnimation.value,
+            logoAnimation.value,
             [0, 1],
             [0.8, 1],
             Extrapolate.CLAMP
@@ -243,14 +269,14 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
         },
         {
           translateY: interpolate(
-            boyAnimation.value,
+            logoAnimation.value,
             [0, 1],
             [30, 0],
             Extrapolate.CLAMP
           ),
         },
       ],
-      opacity: boyAnimation.value,
+      opacity: logoAnimation.value,
     };
   });
 
@@ -261,39 +287,12 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
           translateY: interpolate(
             formAnimation.value,
             [0, 1],
-            [100, 0],
+            [50, 0],
             Extrapolate.CLAMP
           ),
         },
       ],
       opacity: formAnimation.value,
-    };
-  });
-
-  const inputAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          scale: interpolate(
-            inputAnimation.value,
-            [0, 1],
-            [0.8, 1],
-            Extrapolate.CLAMP
-          ),
-        },
-      ],
-      opacity: inputAnimation.value,
-    };
-  });
-
-  const buttonAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          scale: buttonAnimation.value,
-        },
-      ],
-      opacity: buttonAnimation.value,
     };
   });
 
@@ -307,96 +306,173 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <Animated.View
-          style={[
-            styles.container,
-            { marginBottom: keyboardOffset },
-            fadeAnimatedStyle,
-          ]}
+          style={[styles.container, fadeAnimatedStyle]}
         >
           <StatusBar barStyle="light-content" />
-          <LinearGradient
-            colors={["#4A90E2", "#357ABD"]}
-            style={styles.gradientContainer}
+          <View
+            style={[
+              styles.contentContainer,
+              width <= 768 && { flexDirection: "column-reverse" },
+            ]}
           >
-            <SafeAreaView style={styles.safeArea}>
-              {/* Header with UAP-Blockchain Text */}
-              <Animated.View style={[styles.headerContainer, boyAnimatedStyle]}>
-                <View style={styles.logoContainer}>
-                  <Text style={styles.logoText}>UAP</Text>
-                  <Text style={styles.logoSubText}>Blockchain</Text>
-                  <View style={styles.logoDivider} />
-                  <Text style={styles.taglineText}>
-                    Secure • Fast • Reliable
+            {/* Left side - Form */}
+            <ScrollView
+              contentContainerStyle={[
+                styles.formSection,
+                {
+                  paddingBottom: keyboardOffset > 0 ? 20 : 40,
+                  padding: width <= 768 ? 24 : 40,
+                },
+              ]}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <Animated.View style={formAnimatedStyle}>
+                <View style={styles.formCard}>
+                  <Text style={styles.loginTitle}>Bắt đầu ngay</Text>
+                  <Text style={styles.loginSubtitle}>
+                    Nhập thông tin đăng nhập để truy cập tài khoản
                   </Text>
-                </View>
-              </Animated.View>
-            </SafeAreaView>
 
-            {/* Login Form */}
-            <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
-              <View style={styles.formCard}>
-                <Text style={styles.loginTitle}>Login with Password</Text>
-
-                <Animated.View
-                  style={[styles.inputContainer, inputAnimatedStyle]}
-                >
-                  <View style={styles.iconContainer}>
-                    <Feather name="user" size={20} color="#4A90E2" />
-                  </View>
-                  <TextInput
-                    onChangeText={setUserName}
-                    value={userName}
-                    placeholder="Username"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    autoCapitalize="none"
-                  />
-                </Animated.View>
-
-                <Animated.View
-                  style={[styles.inputContainer, inputAnimatedStyle]}
-                >
-                  <View style={styles.iconContainer}>
-                    <Feather name="lock" size={20} color="#4A90E2" />
-                  </View>
-                  <TextInput
-                    onChangeText={setPassword}
-                    value={password}
-                    placeholder="Password"
-                    placeholderTextColor="#999"
-                    style={styles.input}
-                    secureTextEntry={!isPasswordVisible}
-                  />
-                  <TouchableOpacity
-                    style={styles.eyeButton}
-                    onPress={handleEyePress}
-                  >
-                    <Feather
-                      name={isPasswordVisible ? "eye" : "eye-off"}
-                      size={20}
-                      color="#4A90E2"
+                  {/* Email Input */}
+                  <View style={styles.inputContainer}>
+                    <View style={styles.iconContainer}>
+                      <Feather name="mail" size={20} color="#1777ff" />
+                    </View>
+                    <TextInput
+                      onChangeText={setEmail}
+                      value={email}
+                      placeholder="Nhập email của bạn"
+                      placeholderTextColor="#999"
+                      style={styles.input}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                      autoComplete="email"
+                      editable={!isLoading}
                     />
-                  </TouchableOpacity>
-                </Animated.View>
+                  </View>
 
-                <Animated.View
-                  style={[styles.loginButtonContainer, buttonAnimatedStyle]}
-                >
+                  {/* Password Input */}
+                  <View style={styles.inputContainer}>
+                    <View style={styles.iconContainer}>
+                      <Feather name="lock" size={20} color="#1777ff" />
+                    </View>
+                    <TextInput
+                      onChangeText={setPassword}
+                      value={password}
+                      placeholder="Nhập mật khẩu của bạn"
+                      placeholderTextColor="#999"
+                      style={styles.input}
+                      secureTextEntry={!isPasswordVisible}
+                      autoCapitalize="none"
+                      autoComplete="password"
+                      editable={!isLoading}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={handleEyePress}
+                    >
+                      <Feather
+                        name={isPasswordVisible ? "eye" : "eye-off"}
+                        size={20}
+                        color="#1777ff"
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Remember & Forgot Password */}
+                  <View style={styles.loginLinks}>
+                    <TouchableOpacity
+                      style={styles.checkboxContainer}
+                      onPress={() => setRemember(!remember)}
+                      activeOpacity={0.7}
+                    >
+                      <View
+                        style={[
+                          styles.checkbox,
+                          remember && styles.checkboxChecked,
+                        ]}
+                      >
+                        {remember && (
+                          <Feather name="check" size={14} color="#fff" />
+                        )}
+                      </View>
+                      <Text style={styles.checkboxLabel} numberOfLines={1}>
+                        Tôi đồng ý với Điều khoản & Quyền riêng tư
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        // Navigate to forgot password
+                        Toast.show({
+                          type: "info",
+                          text1: "Tính năng đang phát triển",
+                          text1Style: { textAlign: "center", fontSize: 16 },
+                        });
+                      }}
+                    >
+                      <Text style={styles.forgotPasswordLink}>
+                        Quên mật khẩu?
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Login Button */}
                   <TouchableOpacity
-                    style={styles.loginButton}
+                    style={[
+                      styles.loginButton,
+                      isLoading && styles.loginButtonDisabled,
+                    ]}
                     onPress={handleLogin}
                     activeOpacity={0.8}
+                    disabled={isLoading}
                   >
-                    <Text style={styles.buttonText}>LOG IN</Text>
+                    {isLoading ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <Text style={styles.buttonText}>Đăng nhập</Text>
+                    )}
                   </TouchableOpacity>
-                </Animated.View>
-              </View>
-            </Animated.View>
-          </LinearGradient>
+                </View>
+              </Animated.View>
+            </ScrollView>
+
+            {/* Right side - Logo */}
+            {width > 768 && (
+              <Animated.View style={[styles.logoSection, logoAnimatedStyle]}>
+                <LinearGradient
+                  colors={["#1777ff", "#0d5bc9"]}
+                  style={styles.gradientContainer}
+                >
+                  <SafeAreaView style={styles.safeArea}>
+                    <View style={styles.logoContainer}>
+                      <Text style={styles.logoText}>UAP</Text>
+                      <Text style={styles.logoSubText}>Blockchain</Text>
+                    </View>
+                  </SafeAreaView>
+                </LinearGradient>
+              </Animated.View>
+            )}
+            
+            {/* Mobile Logo - Top */}
+            {width <= 768 && (
+              <Animated.View style={[styles.mobileLogoSection, logoAnimatedStyle]}>
+                <LinearGradient
+                  colors={["#1777ff", "#0d5bc9"]}
+                  style={styles.mobileGradientContainer}
+                >
+                  <View style={styles.logoContainer}>
+                    <Text style={styles.mobileLogoText}>UAP</Text>
+                    <Text style={styles.mobileLogoSubText}>Blockchain</Text>
+                  </View>
+                </LinearGradient>
+              </Animated.View>
+            )}
+          </View>
         </Animated.View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -406,95 +482,41 @@ const LoginScreen: React.FC<ILoginScreenProps> = ({ onEyePress }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
-  gradientContainer: {
+  contentContainer: {
     flex: 1,
+    flexDirection: "row",
   },
-  safeArea: {
+  formSection: {
     flex: 1,
-  },
-  headerContainer: {
-    alignItems: "center",
     justifyContent: "center",
-    paddingTop: height * 0.06,
-    paddingBottom: height * 0.04,
-    height: height * 0.4,
-  },
-  // Logo Container Styles
-  logoContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoText: {
-    fontSize: 48,
-    fontWeight: "900",
-    color: "#fff",
-    textAlign: "center",
-    letterSpacing: 2,
-    textShadowColor: "rgba(0, 0, 0, 0.3)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  logoSubText: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "rgba(255, 255, 255, 0.9)",
-    textAlign: "center",
-    letterSpacing: 1,
-    marginTop: -5,
-    textShadowColor: "rgba(0, 0, 0, 0.2)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  logoDivider: {
-    width: 60,
-    height: 3,
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
-    borderRadius: 2,
-    marginVertical: 16,
-  },
-  taglineText: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: "rgba(255, 255, 255, 0.8)",
-    textAlign: "center",
-    letterSpacing: 0.5,
-  },
-  // Form Styles
-  formContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    alignItems: "center",
-    paddingBottom: height * 0.08,
-    paddingHorizontal: 20,
+    backgroundColor: "#fff",
   },
   formCard: {
-    width: width * 0.9,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 24,
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    marginBottom: 20,
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
   },
   loginTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    textAlign: "center",
-    marginBottom: 32,
+    fontSize: 32,
+    fontWeight: "600",
+    color: "#1e293b",
+    marginBottom: 8,
+  },
+  loginSubtitle: {
+    fontSize: 15,
+    color: "#64748b",
+    marginBottom: 40,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#E0E0E0",
-    borderRadius: 12,
-    marginBottom: 16,
-    height: 56,
+    borderColor: "#e0e7ff",
+    borderRadius: 10,
+    marginBottom: 20,
+    height: 50,
     backgroundColor: "#fff",
   },
   iconContainer: {
@@ -504,31 +526,143 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#333",
+    color: "#1e293b",
   },
   eyeButton: {
     paddingHorizontal: 16,
   },
-  loginButtonContainer: {
+  loginLinks: {
     marginTop: 8,
+    marginBottom: 24,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    marginRight: 12,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: "#1777ff",
+    borderRadius: 4,
+    marginRight: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  checkboxChecked: {
+    backgroundColor: "#1777ff",
+    borderColor: "#1777ff",
+  },
+  checkboxLabel: {
+    fontSize: 13,
+    color: "#1e293b",
+    flex: 1,
+    marginLeft: 8,
+    lineHeight: 18,
+  },
+  forgotPasswordLink: {
+    fontSize: 13,
+    color: "rgba(0, 0, 0, 0.5)",
+    fontWeight: "400",
+    flexShrink: 0,
   },
   loginButton: {
-    backgroundColor: "#4A90E2",
-    borderRadius: 12,
+    backgroundColor: "#1777ff",
+    borderRadius: 10,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
+    height: 50,
     elevation: 2,
-    shadowColor: "#4A90E2",
+    shadowColor: "#1777ff",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
+  loginButtonDisabled: {
+    opacity: 0.6,
+  },
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "500",
+  },
+  logoSection: {
+    flex: 1,
+    minWidth: 300,
+  },
+  gradientContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  safeArea: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  logoContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoText: {
+    fontSize: 100,
+    fontWeight: "700",
+    color: "#fff",
+    textAlign: "center",
+    letterSpacing: 2,
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  logoSubText: {
+    fontSize: 40,
+    fontWeight: "600",
+    color: "rgba(255, 255, 255, 0.9)",
+    textAlign: "center",
     letterSpacing: 1,
+    marginTop: -5,
+    textShadowColor: "rgba(0, 0, 0, 0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  // Mobile logo styles
+  mobileLogoSection: {
+    height: 200,
+    width: "100%",
+  },
+  mobileGradientContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  mobileLogoText: {
+    fontSize: 60,
+    fontWeight: "700",
+    color: "#fff",
+    textAlign: "center",
+    letterSpacing: 2,
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  mobileLogoSubText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "rgba(255, 255, 255, 0.9)",
+    textAlign: "center",
+    letterSpacing: 1,
+    marginTop: -5,
+    textShadowColor: "rgba(0, 0, 0, 0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });
 
