@@ -66,7 +66,7 @@ interface ErrorScreenProps {
 
 function ErrorBoundaryScreen({ error, onRetry }: ErrorScreenProps) {
   const handleGoHome = () => {
-    router.replace("/(drawer)/(tabs)" as any);
+    router.replace("/(student)/(tabs)" as any);
   };
 
   const handleRetry = () => {

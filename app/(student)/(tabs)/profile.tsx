@@ -74,12 +74,12 @@ export default function ProfilePage() {
     {
       title: "Thời khóa biểu",
       icon: "calendar",
-      onPress: () => router.push("/(drawer)/(tabs)/timetable" as any),
+      onPress: () => router.push("/(student)/(tabs)/timetable" as any),
     },
     {
       title: "Điểm danh",
       icon: "check-circle",
-      onPress: () => router.push("/(drawer)/(tabs)/attendance" as any),
+      onPress: () => router.push("/(student)/(tabs)/attendance" as any),
     },
     {
       title: "Bảng điểm",

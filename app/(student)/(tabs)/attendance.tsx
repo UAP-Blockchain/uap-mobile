@@ -164,7 +164,7 @@ export default function AttendancePage() {
         style={styles.courseCard}
         onPress={() => {
           router.push(
-            `/(drawer)/(tabs)/attendance-detail/${course.courseCode}` as any
+            `/(student)/(tabs)/attendance-detail/${course.courseCode}` as any
           );
         }}
         activeOpacity={0.8}
