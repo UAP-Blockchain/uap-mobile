@@ -9,14 +9,14 @@ export default function NotFoundScreen() {
   const insets = useSafeAreaInsets();
 
   const handleGoHome = () => {
-    router.replace("/(drawer)/(tabs)" as any);
+    router.replace("/(student)/(tabs)" as any);
   };
 
   const handleGoBack = () => {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace("/(drawer)/(tabs)" as any);
+      router.replace("/(student)/(tabs)" as any);
     }
   };
 

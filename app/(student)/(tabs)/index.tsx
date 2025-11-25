@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Alert,
   RefreshControl,
@@ -18,21 +18,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomePage() {
   const insets = useSafeAreaInsets();
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
   const auth = useSelector(selectAuthLogin);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadRole = async () => {
-      const role = await AsyncStorage.getItem("role");
-      setUserRole(role);
-
-      // If user is VERIFIER/GUEST, redirect to verifier portal
+    const ensureStudentRole = async () => {
+      const role =
+        (await AsyncStorage.getItem("role")) || auth?.userProfile?.role;
       if (role === "VERIFIER" || role === "GUEST") {
-        router.replace("/(drawer)/(tabs)/verifier" as any);
+        router.replace("/public-portal" as any);
       }
     };
-    loadRole();
+    ensureStudentRole();
   }, [auth]);
 
   useEffect(() => {
@@ -48,25 +45,25 @@ export default function HomePage() {
       title: "Timetable",
       icon: "calendar",
       color: "#3674B5",
-      onPress: () => router.push("/(drawer)/(tabs)/timetable" as any),
+      onPress: () => router.push("/(student)/(tabs)/timetable" as any),
     },
     {
       title: "Attendance",
       icon: "check-circle",
       color: "#3674B5",
-      onPress: () => router.push("/(drawer)/(tabs)/attendance" as any),
+      onPress: () => router.push("/(student)/(tabs)/attendance" as any),
     },
     {
       title: "Mark Report",
       icon: "file-text",
       color: "#3674B5",
-      onPress: () => router.push("/(drawer)/(tabs)/mark-report" as any),
+      onPress: () => router.push("/(student)/(tabs)/mark-report" as any),
     },
     {
       title: "Certificate",
       icon: "safety-certificate",
       color: "#3674B5",
-      onPress: () => router.push("/(drawer)/(tabs)/student-home" as any),
+      onPress: () => router.push("/(student)/(tabs)/student-home" as any),
     },
   ];
 
@@ -137,7 +134,7 @@ export default function HomePage() {
           </Text>
           <TouchableOpacity
             style={styles.studentPortalButton}
-            onPress={() => router.push("/(drawer)/(tabs)/student-home" as any)}
+            onPress={() => router.push("/(student)/(tabs)/student-home" as any)}
           >
             <Text style={styles.studentPortalButtonText}>
               Access Student Portal

@@ -47,28 +47,28 @@ export default function StudentHomePage() {
       icon: "trophy",
       color: "#52c41a",
       backgroundColor: "#f6ffed",
-      onPress: () => router.push("/(drawer)/credentials" as any),
+      onPress: () => router.push("/(student)/credentials" as any),
     },
     {
       title: "Transcripts",
       icon: "book",
       color: "#722ed1",
       backgroundColor: "#f0f5ff",
-      onPress: () => router.push("/(drawer)/transcripts" as any),
+      onPress: () => router.push("/(student)/transcripts" as any),
     },
     {
       title: "Certificates",
       icon: "safety-certificate",
       color: "#1890ff",
       backgroundColor: "#e6f7ff",
-      onPress: () => router.push("/(drawer)/certificates" as any),
+      onPress: () => router.push("/(student)/certificates" as any),
     },
     {
       title: "Share Portal",
       icon: "share-alt",
       color: "#fa8c16",
       backgroundColor: "#fff7e6",
-      onPress: () => router.push("/(drawer)/share" as any),
+      onPress: () => router.push("/(student)/share" as any),
     },
   ];
 
@@ -89,14 +89,14 @@ export default function StudentHomePage() {
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => router.push("/(drawer)/share" as any)}
+              onPress={() => router.push("/(student)/share" as any)}
             >
               <AntDesign name="share-alt" size={20} color="#fff" />
               <Text style={styles.actionButtonText}>Chia sẻ</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.primaryButton]}
-              onPress={() => router.push("/(drawer)/qr-generator" as any)}
+              onPress={() => router.push("/(student)/qr-generator" as any)}
             >
               <AntDesign name="qrcode" size={20} color="#fff" />
               <Text style={styles.actionButtonText}>QR Code</Text>

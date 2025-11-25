@@ -209,7 +209,7 @@ export default function TimetablePage() {
   };
 
   const handleViewDetails = (classInfo: ClassInfo) => {
-    router.push(`/(drawer)/class-detail/${classInfo.courseCode}` as any);
+    router.push(`/(student)/class-detail/${classInfo.courseCode}` as any);
   };
 
   const renderClassCard = (classInfo: ClassInfo) => {

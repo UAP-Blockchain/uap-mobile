@@ -39,31 +39,30 @@ export default function RootLayout() {
               >
                 <Stack>
                   <Stack.Screen
-                    name="login"
+                    name="(auth)"
                     options={{
                       headerShown: false,
                       gestureEnabled: false,
                     }}
                   />
                   <Stack.Screen
-                    name="(drawer)"
+                    name="(student)"
                     options={{
                       headerShown: false,
                       gestureEnabled: false,
                     }}
                   />
                   <Stack.Screen
-                    name="timesheet"
+                    name="(teacher)"
                     options={{
                       headerShown: false,
-                      presentation: "modal",
+                      gestureEnabled: false,
                     }}
                   />
                   <Stack.Screen
-                    name="forgot-password"
+                    name="public-portal"
                     options={{
                       headerShown: false,
-                      presentation: "modal",
                     }}
                   />
                 </Stack>

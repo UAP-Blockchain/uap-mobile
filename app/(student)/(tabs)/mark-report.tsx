@@ -74,7 +74,7 @@ export default function MarkReportPage() {
         activeOpacity={0.8}
         onPress={() =>
           router.push(
-            `/(drawer)/(tabs)/mark-report-detail?courseCode=${course.courseCode}` as any
+            `/(student)/(tabs)/mark-report-detail?courseCode=${course.courseCode}` as any
           )
         }
       >

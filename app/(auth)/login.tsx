@@ -1,8 +1,8 @@
-import { Feather } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -73,6 +73,25 @@ const LoginScreen: React.FC = () => {
     );
   }, []);
 
+  const navigateByRole = useCallback(
+    (role?: string | null) => {
+      const normalized = role?.toUpperCase();
+
+      if (normalized === "VERIFIER" || normalized === "GUEST") {
+        router.replace("/public-portal" as any);
+        return;
+      }
+
+      if (normalized === "TEACHER") {
+        router.replace("/(teacher)" as any);
+        return;
+      }
+
+      router.replace("/(student)/(tabs)" as any);
+    },
+    []
+  );
+
   useEffect(() => {
     const handleIsLogin = async () => {
       try {
@@ -82,12 +101,7 @@ const LoginScreen: React.FC = () => {
         if (token && userData) {
           // Check if token is still valid
           if (isTokenValid(token) || token.startsWith("mock_token")) {
-            // Token is valid, auto login - redirect based on role
-            if (role === "VERIFIER" || role === "GUEST") {
-              router.replace("/(drawer)/(tabs)/verifier" as any);
-            } else {
-              router.replace("/(drawer)/(tabs)" as any);
-            }
+            navigateByRole(role);
           } else {
             // Token expired, clear storage
             await AsyncStorage.multiRemove(["token", "userData", "role"]);
@@ -105,7 +119,7 @@ const LoginScreen: React.FC = () => {
       }
     };
     handleIsLogin();
-  }, []);
+  }, [navigateByRole]);
 
   useEffect(() => {
     const onKeyboardShow = (event: any) => {
@@ -233,11 +247,7 @@ const LoginScreen: React.FC = () => {
 
       // Redirect based on role
       setTimeout(() => {
-        if (role === "VERIFIER" || role === "GUEST") {
-          router.replace("/(drawer)/(tabs)/verifier" as any);
-        } else {
-          router.replace("/(drawer)/(tabs)" as any);
-        }
+        navigateByRole(role);
       }, 500);
     } catch (error: any) {
       console.error("Login error:", error);
@@ -430,6 +440,21 @@ const LoginScreen: React.FC = () => {
                       <Text style={styles.buttonText}>Đăng nhập</Text>
                     )}
                   </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.publicPortalButton}
+                    onPress={() => router.push("/public-portal" as any)}
+                    activeOpacity={0.8}
+                  >
+                    <AntDesign
+                      name="safety-certificate"
+                      size={16}
+                      color="#1777ff"
+                    />
+                    <Text style={styles.publicPortalText}>
+                      Truy cập Public Portal
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </Animated.View>
             </ScrollView>
@@ -589,6 +614,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
+  publicPortalButton: {
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  publicPortalText: {
+    color: "#1777ff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
   logoSection: {
     flex: 1,
     minWidth: 300,
@@ -662,3 +699,5 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
+
+
