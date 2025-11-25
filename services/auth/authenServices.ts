@@ -27,6 +27,9 @@ export const AuthenServices = {
       Password: values.password,
     });
   },
+  logout: () => {
+    return api.post(`${url}/logout`);
+  },
   sendOtp: (request: SendOtpRequest): Promise<OtpResponse> => {
     return api.post(`${url}/send-otp`, {
       Email: request.email,

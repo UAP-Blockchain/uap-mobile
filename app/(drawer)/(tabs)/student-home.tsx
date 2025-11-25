@@ -44,28 +44,28 @@ export default function StudentHomePage() {
   const quickAccessItems = [
     {
       title: "My Degrees",
-      icon: "Trophy",
+      icon: "trophy",
       color: "#52c41a",
       backgroundColor: "#f6ffed",
       onPress: () => router.push("/(drawer)/credentials" as any),
     },
     {
       title: "Transcripts",
-      icon: "Book",
+      icon: "book",
       color: "#722ed1",
       backgroundColor: "#f0f5ff",
       onPress: () => router.push("/(drawer)/transcripts" as any),
     },
     {
       title: "Certificates",
-      icon: "Safety",
+      icon: "safety-certificate",
       color: "#1890ff",
       backgroundColor: "#e6f7ff",
       onPress: () => router.push("/(drawer)/certificates" as any),
     },
     {
       title: "Share Portal",
-      icon: "ShareAlt",
+      icon: "share-alt",
       color: "#fa8c16",
       backgroundColor: "#fff7e6",
       onPress: () => router.push("/(drawer)/share" as any),
@@ -91,14 +91,14 @@ export default function StudentHomePage() {
               style={styles.actionButton}
               onPress={() => router.push("/(drawer)/share" as any)}
             >
-              <AntDesign name="ShareAlt" size={20} color="#fff" />
+              <AntDesign name="share-alt" size={20} color="#fff" />
               <Text style={styles.actionButtonText}>Chia sẻ</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.primaryButton]}
               onPress={() => router.push("/(drawer)/qr-generator" as any)}
             >
-              <AntDesign name="Qrcode" size={20} color="#fff" />
+              <AntDesign name="qrcode" size={20} color="#fff" />
               <Text style={styles.actionButtonText}>QR Code</Text>
             </TouchableOpacity>
           </View>
@@ -111,7 +111,7 @@ export default function StudentHomePage() {
           <View style={styles.statsRow}>
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <AntDesign name="filetext1" size={24} color="#1890ff" />
+                <AntDesign name="file-text" size={24} color="#1890ff" />
               </View>
               <Text style={styles.statNumber}>
                 {dashboardStats.totalCredentials}
@@ -124,7 +124,7 @@ export default function StudentHomePage() {
 
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <AntDesign name="checkcircleo" size={24} color="#52c41a" />
+                <AntDesign name="check-circle" size={24} color="#52c41a" />
               </View>
               <Text style={styles.statNumber}>
                 {dashboardStats.verifiedCredentials}
@@ -150,7 +150,7 @@ export default function StudentHomePage() {
           <View style={styles.statsRow}>
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <AntDesign name="clockcircleo" size={24} color="#faad14" />
+                <AntDesign name="clock-circle" size={24} color="#faad14" />
               </View>
               <Text style={styles.statNumber}>
                 {dashboardStats.pendingCredentials}
@@ -179,7 +179,7 @@ export default function StudentHomePage() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitle}>
-              <AntDesign name="Trophy" size={20} color="#fa541c" />
+              <AntDesign name="trophy" size={20} color="#fa541c" />
               <Text style={styles.sectionTitleText}>Truy Cập Nhanh</Text>
             </View>
           </View>

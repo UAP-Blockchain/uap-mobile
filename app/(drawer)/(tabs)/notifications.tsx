@@ -72,15 +72,15 @@ export default function NotificationsPage() {
   const getIconName = (type: string) => {
     switch (type) {
       case "info":
-        return "infocirlceo";
+        return "info-circle";
       case "warning":
         return "warning";
       case "success":
-        return "checkcircleo";
+        return "check-circle";
       case "error":
-        return "closecircleo";
+        return "close-circle";
       default:
-        return "infocirlceo";
+        return "info-circle";
     }
   };
 

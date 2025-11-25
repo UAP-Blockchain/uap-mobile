@@ -148,7 +148,7 @@ export default function TabLayout() {
     ({ focused }: { focused: boolean }) => (
       <TabBarIcon
         focused={focused}
-        name="clockcircle"
+        name="clock-circle"
         color={focused ? "#3674B5" : "#888"}
         size={24}
       />
@@ -285,7 +285,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               focused={focused}
-              name="clockcircle"
+              name="clock-circle"
               color={color}
               size={size}
             />

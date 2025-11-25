@@ -104,13 +104,13 @@ export default function VerificationHistoryPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "VERIFIED":
-        return "checkcircle";
+        return "check-circle";
       case "NOT_FOUND":
-        return "closecircle";
+        return "close-circle";
       case "REVOKED":
-        return "exclamationcircle";
+        return "exclamation-circle";
       default:
-        return "questioncircle";
+        return "question-circle";
     }
   };
 

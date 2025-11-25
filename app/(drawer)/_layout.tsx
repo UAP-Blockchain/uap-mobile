@@ -4,12 +4,18 @@ import { Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { useSelector } from "react-redux";
-import { selectAuthLogin } from "../../lib/features/loginSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  clearAuthData,
+  selectAuthLogin,
+} from "../../lib/features/loginSlice";
+import { AuthenServices } from "../../services/auth/authenServices";
+import Toast from "react-native-toast-message";
 
 export default function DrawerLayout() {
   const auth = useSelector(selectAuthLogin);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const loadRole = async () => {
@@ -22,13 +28,25 @@ export default function DrawerLayout() {
   // Handle logout
   const handleLogout = useCallback(async () => {
     try {
+      await AuthenServices.logout();
+      Toast.show({
+        type: "success",
+        text1: "Đăng xuất thành công",
+        text1Style: { textAlign: "center", fontSize: 16 },
+      });
+    } catch (error: any) {
+      console.error("Error during logout:", error);
+      Toast.show({
+        type: "error",
+        text1: "Không thể gọi API. Đã đăng xuất khỏi thiết bị.",
+        text1Style: { textAlign: "center", fontSize: 16 },
+      });
+    } finally {
+      dispatch(clearAuthData());
       await AsyncStorage.clear();
       router.replace("/login" as any);
-    } catch (error: any) {
-      console.error("Error clearing AsyncStorage during logout:", error);
-      router.replace("/login" as any);
     }
-  }, []);
+  }, [dispatch]);
 
   // Custom drawer content
   const renderDrawerContent = useCallback(

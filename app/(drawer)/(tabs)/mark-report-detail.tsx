@@ -174,7 +174,7 @@ export default function MarkReportDetailPage() {
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <AntDesign name="arrowleft" size={24} color="#fff" />
+          <AntDesign name="arrow-left" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Details</Text>
           <View style={{ width: 24 }} />

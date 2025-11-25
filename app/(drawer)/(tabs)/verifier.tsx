@@ -113,13 +113,13 @@ export default function VerifierPortal() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "VERIFIED":
-        return "checkcircle";
+        return "check-circle";
       case "NOT_FOUND":
-        return "closecircle";
+        return "close-circle";
       case "REVOKED":
-        return "exclamationcircle";
+        return "exclamation-circle";
       default:
-        return "questioncircle";
+        return "question-circle";
     }
   };
 
@@ -194,7 +194,7 @@ export default function VerifierPortal() {
               onPress={() => setInputMethod("file")}
             >
               <AntDesign
-                name="addfile"
+                name="file-add"
                 size={24}
                 color={inputMethod === "file" ? "#fff" : "#3674B5"}
               />
@@ -255,7 +255,7 @@ export default function VerifierPortal() {
               onPress={handleUploadFile}
               activeOpacity={0.8}
             >
-              <AntDesign name="addfile" size={48} color="#3674B5" />
+              <AntDesign name="file-add" size={48} color="#3674B5" />
               <Text style={styles.uploadButtonText}>
                 Upload Credential File
               </Text>

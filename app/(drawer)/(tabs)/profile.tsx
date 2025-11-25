@@ -10,13 +10,19 @@ import {
   Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
-import { selectAuthLogin } from "../../../lib/features/loginSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  clearAuthData,
+  selectAuthLogin,
+} from "../../../lib/features/loginSlice";
 import { AntDesign } from "@expo/vector-icons";
+import { AuthenServices } from "../../../services/auth/authenServices";
+import Toast from "react-native-toast-message";
 
 export default function ProfilePage() {
   const insets = useSafeAreaInsets();
   const auth = useSelector(selectAuthLogin);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     console.log("ProfilePage mounted", auth);
@@ -33,10 +39,22 @@ export default function ProfilePage() {
         style: "destructive",
         onPress: async () => {
           try {
-            await AsyncStorage.clear();
-            router.replace("/login" as any);
+            await AuthenServices.logout();
+            Toast.show({
+              type: "success",
+              text1: "Đăng xuất thành công",
+              text1Style: { textAlign: "center", fontSize: 16 },
+            });
           } catch (error) {
             console.error("Error during logout:", error);
+            Toast.show({
+              type: "error",
+              text1: "Không thể đăng xuất. Đăng xuất khỏi thiết bị.",
+              text1Style: { textAlign: "center", fontSize: 16 },
+            });
+          } finally {
+            dispatch(clearAuthData());
+            await AsyncStorage.clear();
             router.replace("/login" as any);
           }
         },
@@ -60,12 +78,12 @@ export default function ProfilePage() {
     },
     {
       title: "Điểm danh",
-      icon: "checkcircle",
+      icon: "check-circle",
       onPress: () => router.push("/(drawer)/(tabs)/attendance" as any),
     },
     {
       title: "Bảng điểm",
-      icon: "barschart",
+      icon: "bar-chart",
       onPress: () => {
         Alert.alert("Bảng điểm", "Tính năng đang phát triển");
       },

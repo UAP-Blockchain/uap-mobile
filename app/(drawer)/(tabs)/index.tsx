@@ -52,19 +52,19 @@ export default function HomePage() {
     },
     {
       title: "Attendance",
-      icon: "checkcircleo",
+      icon: "check-circle",
       color: "#3674B5",
       onPress: () => router.push("/(drawer)/(tabs)/attendance" as any),
     },
     {
       title: "Mark Report",
-      icon: "filetext1",
+      icon: "file-text",
       color: "#3674B5",
       onPress: () => router.push("/(drawer)/(tabs)/mark-report" as any),
     },
     {
       title: "Certificate",
-      icon: "Safety",
+      icon: "safety-certificate",
       color: "#3674B5",
       onPress: () => router.push("/(drawer)/(tabs)/student-home" as any),
     },
