@@ -8,12 +8,9 @@ import {
   ScrollView,
   TextInput,
   Alert,
-  Dimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
-
-const { width } = Dimensions.get("window");
 
 interface VerificationResult {
   status: "VERIFIED" | "NOT_FOUND" | "REVOKED";
@@ -352,8 +349,9 @@ export default function VerifierPortal() {
               {verificationResult.status === "NOT_FOUND" && (
                 <View style={styles.errorDetails}>
                   <Text style={styles.errorText}>
-                    The credential with ID "{verificationResult.credentialId}"
-                    was not found in the blockchain registry.
+                    The credential with ID &quot;
+                    {verificationResult.credentialId}&quot; was not found in the
+                    blockchain registry.
                   </Text>
                   <Text style={styles.errorSubtext}>
                     Please verify the credential ID and try again.
@@ -627,5 +625,3 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 });
-
-

@@ -13,8 +13,18 @@ export default function TeacherLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="attendance"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="schedule"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
-
-

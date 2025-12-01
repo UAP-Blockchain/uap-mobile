@@ -85,7 +85,20 @@ export default function VerificationHistoryPage() {
 
   const getFilteredHistory = () => {
     if (selectedFilter === "all") return mockHistory;
-    return mockHistory.filter((item) => item.status === selectedFilter);
+
+    // Map filter value to status value
+    const statusMap: Record<
+      "verified" | "not_found" | "revoked",
+      "VERIFIED" | "NOT_FOUND" | "REVOKED"
+    > = {
+      verified: "VERIFIED",
+      not_found: "NOT_FOUND",
+      revoked: "REVOKED",
+    };
+
+    const targetStatus =
+      statusMap[selectedFilter as "verified" | "not_found" | "revoked"];
+    return mockHistory.filter((item) => item.status === targetStatus);
   };
 
   const getStatusColor = (status: string) => {
@@ -409,5 +422,3 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
 });
-
-
