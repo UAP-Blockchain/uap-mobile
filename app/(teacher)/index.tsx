@@ -11,9 +11,12 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
-import { selectAuthLogin } from "../../lib/features/loginSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { clearAuthData, selectAuthLogin } from "../../lib/features/loginSlice";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthenServices } from "../../services/auth/authenServices";
+import Toast from "react-native-toast-message";
 import {
   Avatar,
   Card,
@@ -40,6 +43,7 @@ export default function TeacherHomeScreen() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const auth = useSelector(selectAuthLogin);
+  const dispatch = useDispatch();
 
   const quickActions = useMemo(
     () => [
@@ -158,6 +162,40 @@ export default function TeacherHomeScreen() {
     }
   }, []);
 
+  const handleLogout = useCallback(() => {
+    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất?", [
+      {
+        text: "Hủy",
+        style: "cancel",
+      },
+      {
+        text: "Đăng xuất",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await AuthenServices.logout();
+            Toast.show({
+              type: "success",
+              text1: "Đăng xuất thành công",
+              text1Style: { textAlign: "center", fontSize: 16 },
+            });
+          } catch (error) {
+            console.error("Error during logout:", error);
+            Toast.show({
+              type: "error",
+              text1: "Không thể đăng xuất. Đăng xuất khỏi thiết bị.",
+              text1Style: { textAlign: "center", fontSize: 16 },
+            });
+          } finally {
+            dispatch(clearAuthData());
+            await AsyncStorage.clear();
+            router.replace("/(auth)/login" as any);
+          }
+        },
+      },
+    ]);
+  }, [dispatch]);
+
   const handleClassPress = (classItem: (typeof upcomingClasses)[0]) => {
     // Navigate to schedule screen - user can select slot from there
     router.push("/(teacher)/schedule" as any);
@@ -183,6 +221,12 @@ export default function TeacherHomeScreen() {
         colors={[palette.primary, palette.secondary]}
         style={styles.hero}
       >
+        <View style={styles.heroHeader}>
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <MaterialCommunityIcons name="logout" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
         <View style={styles.heroContent}>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroGreeting}>Chào mừng trở lại</Text>
@@ -352,6 +396,20 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     elevation: 6,
+  },
+  heroHeader: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  logoutButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   heroContent: {
     flexDirection: "row",
