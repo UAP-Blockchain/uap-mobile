@@ -150,14 +150,27 @@ export default function TimetablePage() {
 
   const convertSlotToClassInfo = useCallback(
     (slot: ScheduleItemDto): ClassInfo => {
+      // Đồng bộ với logic bên web: đảm bảo date hợp lệ và fallback mã / tên môn
+      let validDate = slot.date;
+      try {
+        const parsed = new Date(validDate);
+        if (Number.isNaN(parsed.getTime())) {
+          validDate = new Date().toISOString();
+        }
+      } catch {
+        validDate = new Date().toISOString();
+      }
+
       return {
         slotId: slot.slotId,
         classId: slot.classId,
+        // Ưu tiên subjectCode/subjectName, fallback về classCode nếu thiếu
         classCode: slot.classCode,
-        subjectCode: slot.subjectCode,
-        subjectName: slot.subjectName,
-        teacherName: slot.teacherName,
-        date: slot.date,
+        subjectCode: slot.subjectCode || slot.classCode,
+        subjectName: slot.subjectName || slot.classCode,
+        // Giáo viên: dùng tên, nếu thiếu thì dùng mã
+        teacherName: slot.teacherName || slot.teacherCode,
+        date: validDate,
         timeSlotName: slot.timeSlotName,
         startTime: slot.startTime,
         endTime: slot.endTime,
@@ -232,25 +245,47 @@ export default function TimetablePage() {
   const organizedDays = useMemo(() => {
     if (!weeklySchedule) return [];
 
-    const days = weeklySchedule.days
-      .map((day) => {
-        const meta = dayMappings[day.dayOfWeek];
-        if (!meta) return null;
+    const slotsByDay: Record<string, ClassInfo[]> = {};
 
-        const classes = day.slots.map(convertSlotToClassInfo);
+    weeklySchedule.days.forEach((day) => {
+      const fallbackDate = day.date;
+      day.slots.forEach((slot) => {
+        const key = slot.dayOfWeek || day.dayOfWeek;
+        const slotDate = slot.date || fallbackDate;
+        const slotWithDate = { ...slot, date: slotDate };
+        if (!slotsByDay[key]) {
+          slotsByDay[key] = [];
+        }
+        slotsByDay[key].push(convertSlotToClassInfo(slotWithDate));
+      });
+    });
 
-        return {
-          ...meta,
-          date: day.date,
-          classes: classes.sort((a, b) => {
-            const timeA = a.startTime || "00:00";
-            const timeB = b.startTime || "00:00";
-            return timeA.localeCompare(timeB);
-          }),
-        };
-      })
-      .filter((day): day is NonNullable<typeof day> => day !== null)
-      .sort((a, b) => a.order - b.order);
+    const baseMonday = weeklySchedule.weekStartDate
+      ? new Date(weeklySchedule.weekStartDate)
+      : getMondayOfWeek(new Date());
+    baseMonday.setHours(0, 0, 0, 0);
+
+    const days = Object.entries(dayMappings).map(([dayName, meta]) => {
+      const apiDay = weeklySchedule.days.find((d) => d.dayOfWeek === dayName);
+      const computedDate = (() => {
+        if (apiDay?.date) return apiDay.date;
+        const d = new Date(baseMonday);
+        d.setDate(d.getDate() + meta.order);
+        return d.toISOString();
+      })();
+
+      const classes = (slotsByDay[dayName] || []).sort((a, b) => {
+        const timeA = a.startTime || "00:00";
+        const timeB = b.startTime || "00:00";
+        return timeA.localeCompare(timeB);
+      });
+
+      return {
+        ...meta,
+        date: computedDate,
+        classes,
+      };
+    });
 
     return days;
   }, [weeklySchedule, convertSlotToClassInfo]);
@@ -302,10 +337,7 @@ export default function TimetablePage() {
 
   const renderClassCard = useCallback(
     (classInfo: ClassInfo) => {
-      const timeRange = formatTimeRange(
-        classInfo.startTime,
-        classInfo.endTime
-      );
+      const timeRange = formatTimeRange(classInfo.startTime, classInfo.endTime);
 
       return (
         <TouchableOpacity
@@ -404,7 +436,9 @@ export default function TimetablePage() {
               <Text style={styles.dayDate}>{formatDate(day.date)}</Text>
             </View>
             <View style={styles.classCount}>
-              <Text style={styles.classCountText}>{day.classes.length} lớp</Text>
+              <Text style={styles.classCountText}>
+                {day.classes.length} lớp
+              </Text>
             </View>
           </View>
 
@@ -453,7 +487,11 @@ export default function TimetablePage() {
               style={styles.navButton}
               onPress={() => handleWeekChange("prev")}
             >
-              <MaterialCommunityIcons name="chevron-left" size={20} color="#fff" />
+              <MaterialCommunityIcons
+                name="chevron-left"
+                size={20}
+                color="#fff"
+              />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.navButton}
@@ -465,7 +503,11 @@ export default function TimetablePage() {
               style={styles.navButton}
               onPress={() => handleWeekChange("next")}
             >
-              <MaterialCommunityIcons name="chevron-right" size={20} color="#fff" />
+              <MaterialCommunityIcons
+                name="chevron-right"
+                size={20}
+                color="#fff"
+              />
             </TouchableOpacity>
           </View>
         </View>

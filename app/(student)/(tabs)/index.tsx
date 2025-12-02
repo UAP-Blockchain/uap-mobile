@@ -317,11 +317,11 @@ export default function HomePage() {
                     { backgroundColor: `${card.color}20` },
                   ]}
                 >
-                  <MaterialCommunityIcons
-                    name={card.icon as any}
-                    size={22}
-                    color={card.color}
-                  />
+                <MaterialCommunityIcons
+                  name={card.icon as any}
+                  size={22}
+                  color={card.color}
+                />
                 </View>
                 <Text style={[styles.statTrend, { color: card.color }]}>
                   {card.trend}
