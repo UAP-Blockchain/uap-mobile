@@ -66,17 +66,6 @@ export default function DrawerLayout() {
         </Pressable>
 
         <Pressable
-          onPress={() => router.push("/(student)/(tabs)/student-home" as any)}
-          style={({ pressed }) => ({
-            backgroundColor: pressed ? "#f0f0f0" : "transparent",
-            borderRadius: 8,
-            padding: 16,
-          })}
-        >
-          <Text style={{ fontSize: 16, color: "#333" }}>Profile</Text>
-        </Pressable>
-
-        <Pressable
           onPress={() => router.push("/(student)/(tabs)/timetable" as any)}
           style={({ pressed }) => ({
             backgroundColor: pressed ? "#f0f0f0" : "transparent",
@@ -84,7 +73,7 @@ export default function DrawerLayout() {
             padding: 16,
           })}
         >
-          <Text style={{ fontSize: 16, color: "#333" }}>Timetable</Text>
+          <Text style={{ fontSize: 16, color: "#333" }}>Thời khóa biểu</Text>
         </Pressable>
 
         <Pressable
@@ -95,8 +84,45 @@ export default function DrawerLayout() {
             padding: 16,
           })}
         >
-          <Text style={{ fontSize: 16, color: "#333" }}>Attendance</Text>
+          <Text style={{ fontSize: 16, color: "#333" }}>Điểm danh</Text>
         </Pressable>
+
+        <Pressable
+          onPress={() =>
+            router.push("/(student)/(tabs)/attendance-report" as any)
+          }
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Báo cáo điểm danh</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/(student)/(tabs)/mark-report" as any)}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Bảng điểm</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/(student)/(tabs)/roadmap" as any)}
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? "#f0f0f0" : "transparent",
+            borderRadius: 8,
+            padding: 16,
+          })}
+        >
+          <Text style={{ fontSize: 16, color: "#333" }}>Lộ trình học</Text>
+        </Pressable>
+
+      
 
         <View style={{ marginTop: "auto", padding: 16 }}>
           <Pressable

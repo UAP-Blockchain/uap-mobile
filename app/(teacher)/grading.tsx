@@ -201,7 +201,7 @@ export default function TeacherGradingScreen() {
 
       if (missingGradeComponents.length > 0) {
         Toast.show({
-          type: "warning",
+          type: "info",
           text1: "Cảnh báo",
           text2: `Không tìm thấy mã điểm cho: ${missingGradeComponents.join(
             ", "
@@ -211,7 +211,7 @@ export default function TeacherGradingScreen() {
 
       if (gradesToUpdate.length === 0) {
         Toast.show({
-          type: "warning",
+          type: "info",
           text1: "Cảnh báo",
           text2: "Không có điểm nào để cập nhật",
         });
