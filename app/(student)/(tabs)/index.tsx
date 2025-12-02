@@ -227,6 +227,18 @@ export default function HomePage() {
           >
             <MaterialCommunityIcons name="menu" size={22} color="#fff" />
           </TouchableOpacity>
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => router.push("/(student)/(tabs)/profile" as any)}
+            activeOpacity={0.85}
+          >
+            <MaterialCommunityIcons
+              name="account-circle"
+              size={22}
+              color="#fff"
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.heroContent}>
           <View style={{ flex: 1 }}>
@@ -317,11 +329,11 @@ export default function HomePage() {
                     { backgroundColor: `${card.color}20` },
                   ]}
                 >
-                <MaterialCommunityIcons
-                  name={card.icon as any}
-                  size={22}
-                  color={card.color}
-                />
+                  <MaterialCommunityIcons
+                    name={card.icon as any}
+                    size={22}
+                    color={card.color}
+                  />
                 </View>
                 <Text style={[styles.statTrend, { color: card.color }]}>
                   {card.trend}
@@ -476,6 +488,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
+  profileButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.4)",
     justifyContent: "center",
