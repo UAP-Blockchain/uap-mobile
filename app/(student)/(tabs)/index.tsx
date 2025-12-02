@@ -67,6 +67,13 @@ export default function HomePage() {
         onPress: () => router.push("/(student)/(tabs)/attendance" as any),
       },
       {
+        title: "Báo cáo điểm danh",
+        icon: "clipboard-text-outline",
+        gradient: ["#f9a8d4", "#ec4899"],
+        onPress: () =>
+          router.push("/(student)/(tabs)/attendance-report" as any),
+      },
+      {
         title: "Bảng điểm",
         icon: "file-document",
         gradient: ["#FBCF6A", "#F7931A"],

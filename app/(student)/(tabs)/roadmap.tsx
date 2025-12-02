@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -44,6 +45,9 @@ export default function RoadmapPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedSemesters, setExpandedSemesters] = useState<
+    Record<number, boolean>
+  >({});
 
   const loadSummary = async () => {
     setLoading(true);
@@ -92,6 +96,9 @@ export default function RoadmapPage() {
     summary.semesterSummaries.forEach((sem) => {
       void loadSemester(sem.semesterNumber);
     });
+    // Mặc định mở kỳ đầu tiên giống web
+    const first = summary.semesterSummaries[0].semesterNumber;
+    setExpandedSemesters((prev) => ({ ...prev, [first]: true }));
   }, [summary]);
 
   const onRefresh = async () => {
@@ -137,6 +144,13 @@ export default function RoadmapPage() {
   }, [summary]);
 
   const semesters = useMemo(() => summary?.semesterSummaries || [], [summary]);
+
+  const toggleSemester = (semesterNumber: number) => {
+    setExpandedSemesters((prev) => ({
+      ...prev,
+      [semesterNumber]: !prev[semesterNumber],
+    }));
+  };
 
   const getStatusChip = (status: string) => {
     switch (status) {
@@ -280,81 +294,104 @@ export default function RoadmapPage() {
       >
         {semesters.map((semester) => (
           <View key={semester.semesterNumber} style={styles.semesterCard}>
-            <View style={styles.semesterHeader}>
-              <View>
-                <Text style={styles.semesterName}>
-                  Kỳ {semester.semesterNumber}
-                </Text>
-                <Text style={styles.semesterCode}>
-                  {semester.semesterName || ""}
-                </Text>
-              </View>
-              {semester.inProgressSubjects > 0 && (
-                <View style={styles.currentBadge}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => toggleSemester(semester.semesterNumber)}
+            >
+              <View style={styles.semesterHeader}>
+                <View style={styles.semesterHeaderLeft}>
                   <MaterialCommunityIcons
-                    name="star"
-                    size={14}
-                    color="#f59e0b"
+                    name={
+                      expandedSemesters[semester.semesterNumber]
+                        ? "chevron-down"
+                        : "chevron-right"
+                    }
+                    size={20}
+                    color={palette.subtitle}
                   />
-                  <Text style={styles.currentBadgeText}>Đang học</Text>
+                  <View>
+                    <Text style={styles.semesterName}>
+                      Kỳ {semester.semesterNumber}
+                    </Text>
+                    {semester.semesterName ? (
+                      <Text style={styles.semesterCode}>
+                        {semester.semesterName}
+                      </Text>
+                    ) : null}
+                    <Text style={styles.semesterCount}>
+                      {semester.subjectCount} môn học
+                    </Text>
+                  </View>
                 </View>
-              )}
-            </View>
+                {semester.inProgressSubjects > 0 && (
+                  <View style={styles.currentBadge}>
+                    <MaterialCommunityIcons
+                      name="star"
+                      size={14}
+                      color="#f59e0b"
+                    />
+                    <Text style={styles.currentBadgeText}>Đang học</Text>
+                  </View>
+                )}
+              </View>
+            </TouchableOpacity>
 
-            <View style={styles.subjectList}>
-              {(semesterDetails[semester.semesterNumber] || []).map(
-                (subject) => {
-                  const chip = getStatusChip(subject.status);
-                  return (
-                    <View
-                      key={subject.subjectId + subject.subjectCode}
-                      style={styles.subjectItem}
-                    >
-                      <View style={styles.subjectLeft}>
-                        <View style={styles.subjectIcon}>
-                          <Text style={styles.subjectIconText}>
-                            {subject.subjectCode.slice(0, 2)}
-                          </Text>
+            {expandedSemesters[semester.semesterNumber] && (
+              <View style={styles.subjectList}>
+                {(semesterDetails[semester.semesterNumber] || []).map(
+                  (subject) => {
+                    const chip = getStatusChip(subject.status);
+                    return (
+                      <View
+                        key={subject.subjectId + subject.subjectCode}
+                        style={styles.subjectItem}
+                      >
+                        <View style={styles.subjectLeft}>
+                          <View style={styles.subjectIcon}>
+                            <Text style={styles.subjectIconText}>
+                              {subject.subjectCode.slice(0, 2)}
+                            </Text>
+                          </View>
+                          <View style={styles.subjectInfo}>
+                            <Text style={styles.subjectCode}>
+                              {subject.subjectCode}
+                            </Text>
+                            <Text style={styles.subjectName}>
+                              {subject.subjectName}
+                            </Text>
+                            <Text style={styles.subjectMeta}>
+                              {subject.credits} tín chỉ
+                              {subject.finalScore != null &&
+                                ` · Điểm: ${subject.finalScore.toFixed(2)}`}
+                            </Text>
+                          </View>
                         </View>
-                        <View style={styles.subjectInfo}>
-                          <Text style={styles.subjectCode}>
-                            {subject.subjectCode}
-                          </Text>
-                          <Text style={styles.subjectName}>
-                            {subject.subjectName}
-                          </Text>
-                          <Text style={styles.subjectMeta}>
-                            {subject.credits} tín chỉ
-                            {subject.finalScore != null &&
-                              ` · Điểm: ${subject.finalScore.toFixed(2)}`}
-                          </Text>
-                        </View>
-                      </View>
-                      <View style={styles.subjectRight}>
-                        <View
-                          style={[
-                            styles.statusChip,
-                            {
-                              backgroundColor: chip.background,
-                              borderColor: chip.color,
-                            },
-                          ]}
-                        >
-                          <Text
+                        <View style={styles.subjectRight}>
+                          <View
                             style={[
-                              styles.statusChipText,
-                              { color: chip.color },
+                              styles.statusChip,
+                              {
+                                backgroundColor: chip.background,
+                                borderColor: chip.color,
+                              },
                             ]}
                           >
-                            {chip.label}
-                          </Text>
+                            <Text
+                              style={[
+                                styles.statusChipText,
+                                { color: chip.color },
+                              ]}
+                            >
+                              {chip.label}
+                            </Text>
+                          </View>
                         </View>
                       </View>
-                    </View>
-                  );
-                }
-              )}
-            </View>
+                    );
+                  }
+                )}
+              </View>
+            )}
           </View>
         ))}
       </ScrollView>
@@ -436,6 +473,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
+  semesterHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   semesterName: {
     fontSize: 16,
     fontWeight: "700",
@@ -443,6 +485,11 @@ const styles = StyleSheet.create({
   },
   semesterCode: {
     fontSize: 13,
+    color: palette.subtitle,
+    marginTop: 2,
+  },
+  semesterCount: {
+    fontSize: 12,
     color: palette.subtitle,
     marginTop: 2,
   },

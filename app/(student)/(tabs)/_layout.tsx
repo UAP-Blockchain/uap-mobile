@@ -271,6 +271,12 @@ export default function TabLayout() {
           href: null, // Ẩn tab, truy cập từ quick action trên Home
         }}
       />
+      <Tabs.Screen
+        name="attendance-report"
+        options={{
+          href: null, // Ẩn tab, chỉ mở từ Home hoặc nơi khác
+        }}
+      />
     </Tabs>
   );
 }
