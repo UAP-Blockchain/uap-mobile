@@ -1,3 +1,5 @@
+// ===== V2 Roadmap types (giống web) =====
+
 export interface CurriculumRoadmapSubjectDto {
   subjectId: string;
   subjectCode: string;
@@ -11,11 +13,48 @@ export interface CurriculumRoadmapSubjectDto {
   currentSemesterName: string | null;
   prerequisiteSubjectCode: string | null;
   prerequisitesMet: boolean;
+  attendancePercentage: number | null;
+  attendanceRequirementMet: boolean;
   notes: string | null;
 }
 
 export interface CurriculumRoadmapSemesterDto {
   semesterNumber: number;
+  subjects: CurriculumRoadmapSubjectDto[];
+}
+
+export interface CurriculumSemesterSummaryDto {
+  semesterNumber: number;
+  semesterName: string;
+  subjectCount: number;
+  completedSubjects: number;
+  inProgressSubjects: number;
+  plannedSubjects: number;
+  failedSubjects: number;
+  lockedSubjects: number;
+}
+
+export interface CurriculumRoadmapSummaryDto {
+  studentId: string;
+  studentCode: string;
+  studentName: string;
+  curriculumId: number;
+  curriculumCode: string;
+  curriculumName: string;
+  currentGPA?: number | null;
+  totalSubjects: number;
+  completedSubjects: number;
+  failedSubjects: number;
+  inProgressSubjects: number;
+  openSubjects: number;
+  lockedSubjects: number;
+  semesterSummaries: CurriculumSemesterSummaryDto[];
+  generatedAt: string;
+}
+
+export interface CurriculumSemesterDto {
+  semesterNumber: number;
+  semesterName: string;
   subjects: CurriculumRoadmapSubjectDto[];
 }
 
@@ -34,6 +73,8 @@ export interface CurriculumRoadmapDto {
   lockedSubjects: number;
   semesters: CurriculumRoadmapSemesterDto[];
 }
+
+// ===== Legacy roadmap overview types =====
 
 export interface RoadmapSubjectDto {
   id: string;

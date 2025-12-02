@@ -73,6 +73,12 @@ export default function HomePage() {
         onPress: () => router.push("/(student)/(tabs)/mark-report" as any),
       },
       {
+        title: "Lộ trình học",
+        icon: "route",
+        gradient: ["#34d399", "#059669"],
+        onPress: () => router.push("/(student)/(tabs)/roadmap" as any),
+      },
+      {
         title: "Chứng chỉ",
         icon: "shield-check",
         gradient: ["#BC99FF", "#8155E5"],
@@ -246,14 +252,22 @@ export default function HomePage() {
             style={styles.heroButton}
             onPress={() => router.push("/(student)/(tabs)/student-home" as any)}
           >
-            <MaterialCommunityIcons name="share-variant" size={20} color="#fff" />
+            <MaterialCommunityIcons
+              name="share-variant"
+              size={20}
+              color="#fff"
+            />
             <Text style={styles.heroButtonText}>Chia sẻ chứng chỉ</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.heroButton, styles.heroButtonOutline]}
             onPress={() => router.push("/public-portal" as any)}
           >
-            <MaterialCommunityIcons name="qrcode" size={20} color={palette.primary} />
+            <MaterialCommunityIcons
+              name="qrcode"
+              size={20}
+              color={palette.primary}
+            />
             <Text style={[styles.heroButtonText, { color: palette.primary }]}>
               Tạo mã QR
             </Text>
@@ -264,7 +278,10 @@ export default function HomePage() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Hiệu suất học tập</Text>
-          <Chip compact onPress={() => router.push("/(student)/(tabs)/mark-report" as any)}>
+          <Chip
+            compact
+            onPress={() => router.push("/(student)/(tabs)/mark-report" as any)}
+          >
             Xem chi tiết
           </Chip>
         </View>
@@ -277,13 +294,16 @@ export default function HomePage() {
             <Card key={card.title} style={styles.statCard} elevation={2}>
               <View style={styles.statCardHeader}>
                 <View
-                  style={[styles.statIcon, { backgroundColor: `${card.color}20` }]}
+                  style={[
+                    styles.statIcon,
+                    { backgroundColor: `${card.color}20` },
+                  ]}
                 >
-                <MaterialCommunityIcons
-                  name={card.icon as any}
-                  size={22}
-                  color={card.color}
-                />
+                  <MaterialCommunityIcons
+                    name={card.icon as any}
+                    size={22}
+                    color={card.color}
+                  />
                 </View>
                 <Text style={[styles.statTrend, { color: card.color }]}>
                   {card.trend}
@@ -339,7 +359,12 @@ export default function HomePage() {
         <Card style={styles.sectionCard} elevation={2}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Chứng chỉ gần đây</Text>
-            <Chip compact onPress={() => router.push("/(student)/(tabs)/student-home" as any)}>
+            <Chip
+              compact
+              onPress={() =>
+                router.push("/(student)/(tabs)/student-home" as any)
+              }
+            >
               Xem tất cả
             </Chip>
           </View>

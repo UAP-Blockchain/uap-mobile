@@ -265,6 +265,12 @@ export default function TabLayout() {
           href: null, // Ẩn tab này khỏi tab bar, chỉ truy cập được từ mark-report
         }}
       />
+      <Tabs.Screen
+        name="roadmap"
+        options={{
+          href: null, // Ẩn tab, truy cập từ quick action trên Home
+        }}
+      />
     </Tabs>
   );
 }
