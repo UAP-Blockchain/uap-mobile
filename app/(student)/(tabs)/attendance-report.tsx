@@ -57,6 +57,9 @@ export default function AttendanceReportPage() {
     []
   );
   const [loadingAttendance, setLoadingAttendance] = useState<boolean>(false);
+  const [expandedSemesters, setExpandedSemesters] = useState<
+    Record<number, boolean>
+  >({});
 
   const loadSummary = useCallback(async () => {
     setLoading(true);
@@ -66,6 +69,7 @@ export default function AttendanceReportPage() {
       setSummary(data);
       if (data.semesterSummaries.length > 0) {
         const firstSemester = data.semesterSummaries[0].semesterNumber;
+        setExpandedSemesters({ [firstSemester]: true });
         await loadSemester(firstSemester, data);
       }
     } catch (err: any) {
@@ -135,6 +139,18 @@ export default function AttendanceReportPage() {
   };
 
   const semesters = useMemo(() => summary?.semesterSummaries || [], [summary]);
+
+  const toggleSemester = useCallback(
+    (semesterNumber: number) => {
+      // Luôn đảm bảo đã load dữ liệu cho kỳ đó (hàm có guard sẵn)
+      void loadSemester(semesterNumber);
+      setExpandedSemesters((prev) => ({
+        ...prev,
+        [semesterNumber]: !prev[semesterNumber],
+      }));
+    },
+    [loadSemester]
+  );
 
   const getFilteredSubjects = (
     subjects: CurriculumRoadmapSubjectDto[]
@@ -324,49 +340,82 @@ export default function AttendanceReportPage() {
               const subjects = semesterData
                 ? getFilteredSubjects(semesterData.subjects)
                 : [];
+              const isExpanded = expandedSemesters[sem.semesterNumber];
 
               return (
                 <View key={sem.semesterNumber} style={styles.semesterBlock}>
-                  <Text style={styles.semesterName}>
-                    Kỳ {sem.semesterNumber} · {sem.semesterName}
-                  </Text>
-                  {isLoading && (
-                    <View style={styles.smallLoading}>
-                      <ActivityIndicator size="small" color={palette.primary} />
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => toggleSemester(sem.semesterNumber)}
+                  >
+                    <View style={styles.semesterHeader}>
+                      <View style={styles.semesterHeaderLeft}>
+                        <MaterialCommunityIcons
+                          name={isExpanded ? "chevron-down" : "chevron-right"}
+                          size={20}
+                          color={palette.subtitle}
+                        />
+                        <View>
+                          <Text style={styles.semesterName}>
+                            Kỳ {sem.semesterNumber}
+                          </Text>
+                          {sem.semesterName ? (
+                            <Text style={styles.semesterCode}>
+                              {sem.semesterName}
+                            </Text>
+                          ) : null}
+                          <Text style={styles.semesterCount}>
+                            {sem.subjectCount} môn học
+                          </Text>
+                        </View>
+                      </View>
                     </View>
-                  )}
-                  {!isLoading && subjects.length === 0 && (
-                    <Text style={styles.emptySemesterText}>
-                      Chưa có môn học đang học hoặc đã hoàn thành
-                    </Text>
-                  )}
-                  {!isLoading &&
-                    subjects.map((subject) => (
-                      <TouchableOpacity
-                        key={subject.subjectId}
-                        style={[
-                          styles.courseItem,
-                          selectedSubjectId === subject.subjectId &&
-                            styles.courseItemActive,
-                        ]}
-                        onPress={() => handleSubjectSelect(subject)}
-                        activeOpacity={0.8}
-                      >
-                        <View style={styles.courseIcon}>
-                          <Text style={styles.courseIconText}>
-                            {subject.subjectCode.slice(0, 2)}
-                          </Text>
+                  </TouchableOpacity>
+
+                  {isExpanded && (
+                    <>
+                      {isLoading && (
+                        <View style={styles.smallLoading}>
+                          <ActivityIndicator
+                            size="small"
+                            color={palette.primary}
+                          />
                         </View>
-                        <View style={styles.courseInfo}>
-                          <Text style={styles.courseCode}>
-                            {subject.subjectCode}
-                          </Text>
-                          <Text style={styles.courseName}>
-                            {subject.subjectName}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
+                      )}
+                      {!isLoading && subjects.length === 0 && (
+                        <Text style={styles.emptySemesterText}>
+                          Chưa có môn học đang học hoặc đã hoàn thành
+                        </Text>
+                      )}
+                      {!isLoading &&
+                        subjects.map((subject) => (
+                          <TouchableOpacity
+                            key={subject.subjectId}
+                            style={[
+                              styles.courseItem,
+                              selectedSubjectId === subject.subjectId &&
+                                styles.courseItemActive,
+                            ]}
+                            onPress={() => handleSubjectSelect(subject)}
+                            activeOpacity={0.8}
+                          >
+                            <View style={styles.courseIcon}>
+                              <Text style={styles.courseIconText}>
+                                {subject.subjectCode.slice(0, 2)}
+                              </Text>
+                            </View>
+                            <View style={styles.courseInfo}>
+                              <Text style={styles.courseCode}>
+                                {subject.subjectCode}
+                              </Text>
+                              <Text style={styles.courseName}>
+                                {subject.subjectName}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                    </>
+                  )}
                 </View>
               );
             })
@@ -554,11 +603,29 @@ const styles = StyleSheet.create({
   semesterBlock: {
     marginBottom: 12,
   },
+  semesterHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+  },
+  semesterHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   semesterName: {
     fontSize: 15,
     fontWeight: "700",
     color: palette.text,
-    marginBottom: 6,
+  },
+  semesterCode: {
+    fontSize: 13,
+    color: palette.subtitle,
+  },
+  semesterCount: {
+    fontSize: 12,
+    color: palette.subtitle,
+    marginTop: 2,
   },
   smallLoading: {
     flexDirection: "row",
