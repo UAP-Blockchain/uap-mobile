@@ -1,8 +1,7 @@
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
-import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { Tabs } from "expo-router";
-import React, { memo, useCallback } from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
+import React, { memo } from "react";
+import { Animated, Text, View } from "react-native";
 
 // import { useNotification } from '@/contexts/NotificationContext';
 
@@ -72,18 +71,6 @@ const TabBarIcon = memo(function TabBarIcon({
       {iconType === "Entypo" && name && (
         <Entypo name={name as any} size={size} color={color} />
       )}
-      {focused && (
-        <View
-          style={{
-            position: "absolute",
-            bottom: -8,
-            width: 4,
-            height: 4,
-            borderRadius: 2,
-            backgroundColor: "#3674B5",
-          }}
-        />
-      )}
       {badgeCount != null && badgeCount > 0 && (
         <View
           style={{
@@ -115,81 +102,15 @@ const TabBarIcon = memo(function TabBarIcon({
 });
 
 export default function TabLayout() {
-  const notificationCount = 0; // Temporary placeholder
-  const navigation = useNavigation();
-
-  const renderMenuButton = useCallback(
-    (props: any) => (
-      <TouchableOpacity
-        {...props}
-        onPress={() => {
-          navigation.dispatch(DrawerActions.openDrawer());
-        }}
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <TabBarIcon
-          focused={false}
-          name="menu"
-          color="#888"
-          size={24}
-          iconType="Entypo"
-          badgeCount={notificationCount}
-        />
-        <Text
-          style={{
-            color: "#888",
-            fontSize: 12,
-            fontWeight: "500",
-            marginTop: 3,
-          }}
-        >
-          Menu
-        </Text>
-      </TouchableOpacity>
-    ),
-    [navigation, notificationCount]
-  );
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#3674B5",
-        tabBarInactiveTintColor: "#888",
         tabBarStyle: {
-          backgroundColor: "#ffffff",
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 65,
-          borderTopWidth: 0,
-          elevation: 10,
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: -2,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          borderTopLeftRadius: 16,
-          borderTopRightRadius: 16,
-          position: "absolute",
-          bottom: 0,
-          zIndex: 8,
+          display: "none",
         },
-        tabBarIconStyle: {
-          marginTop: 0,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          marginTop: 2,
-          marginBottom: 2,
-          fontWeight: "500",
-          textAlign: "center",
-        },
+        tabBarShowLabel: false,
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen
@@ -235,13 +156,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="menu-tab"
-        options={{
-          title: "Menu",
-          tabBarButton: renderMenuButton,
-        }}
-      />
-      <Tabs.Screen
         name="student-home"
         options={{
           href: null, // Ẩn tab này khỏi tab bar nhưng vẫn có thể điều hướng từ code
@@ -275,6 +189,24 @@ export default function TabLayout() {
         name="attendance-report"
         options={{
           href: null, // Ẩn tab, chỉ mở từ Home hoặc nơi khác
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="menu-tab"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

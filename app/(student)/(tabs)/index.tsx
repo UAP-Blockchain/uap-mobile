@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { selectAuthLogin } from "../../../lib/features/loginSlice";
@@ -38,6 +39,7 @@ const palette = {
 
 export default function HomePage() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
   const auth = useSelector(selectAuthLogin);
 
@@ -217,6 +219,27 @@ export default function HomePage() {
         colors={[palette.primary, palette.secondary]}
         style={styles.hero}
       >
+        <View style={styles.heroHeader}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            activeOpacity={0.85}
+          >
+            <MaterialCommunityIcons name="menu" size={22} color="#fff" />
+          </TouchableOpacity>
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => router.push("/(student)/chat" as any)}
+            activeOpacity={0.85}
+          >
+            <MaterialCommunityIcons
+              name="message-text-outline"
+              size={20}
+              color="#fff"
+            />
+          </TouchableOpacity>
+        </View>
         <View style={styles.heroContent}>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroGreeting}>Chào mừng trở lại</Text>
@@ -455,6 +478,21 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     elevation: 6,
+  },
+  heroHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  menuButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
   heroContent: {
     flexDirection: "row",
