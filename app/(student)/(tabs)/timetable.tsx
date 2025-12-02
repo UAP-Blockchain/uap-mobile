@@ -245,19 +245,10 @@ export default function TimetablePage() {
   const organizedDays = useMemo(() => {
     if (!weeklySchedule) return [];
 
-    const slotsByDay: Record<string, ClassInfo[]> = {};
-
+    // Map dayOfWeek -> dữ liệu ngày từ API
+    const dayMap: Record<string, DailyScheduleDto> = {};
     weeklySchedule.days.forEach((day) => {
-      const fallbackDate = day.date;
-      day.slots.forEach((slot) => {
-        const key = slot.dayOfWeek || day.dayOfWeek;
-        const slotDate = slot.date || fallbackDate;
-        const slotWithDate = { ...slot, date: slotDate };
-        if (!slotsByDay[key]) {
-          slotsByDay[key] = [];
-        }
-        slotsByDay[key].push(convertSlotToClassInfo(slotWithDate));
-      });
+      dayMap[day.dayOfWeek] = day;
     });
 
     const baseMonday = weeklySchedule.weekStartDate
@@ -266,23 +257,28 @@ export default function TimetablePage() {
     baseMonday.setHours(0, 0, 0, 0);
 
     const days = Object.entries(dayMappings).map(([dayName, meta]) => {
-      const apiDay = weeklySchedule.days.find((d) => d.dayOfWeek === dayName);
-      const computedDate = (() => {
+      const apiDay = dayMap[dayName];
+
+      const date = (() => {
         if (apiDay?.date) return apiDay.date;
         const d = new Date(baseMonday);
         d.setDate(d.getDate() + meta.order);
         return d.toISOString();
       })();
 
-      const classes = (slotsByDay[dayName] || []).sort((a, b) => {
-        const timeA = a.startTime || "00:00";
-        const timeB = b.startTime || "00:00";
-        return timeA.localeCompare(timeB);
-      });
+      const classes = apiDay
+        ? apiDay.slots
+            .map((slot) => convertSlotToClassInfo(slot))
+            .sort((a, b) => {
+              const timeA = a.startTime || "00:00";
+              const timeB = b.startTime || "00:00";
+              return timeA.localeCompare(timeB);
+            })
+        : [];
 
       return {
         ...meta,
-        date: computedDate,
+        date,
         classes,
       };
     });

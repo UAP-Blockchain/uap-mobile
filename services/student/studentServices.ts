@@ -3,12 +3,22 @@ import type {
   WeeklyScheduleDto,
   WeeklyScheduleResponse,
 } from "@/types/schedule";
+import type { StudentDetailDto } from "@/types/student";
 
 const url = "/students";
 
 export const StudentServices = {
   /**
-   * Get current student's weekly schedule
+   * Lấy thông tin hồ sơ sinh viên hiện tại
+   * Endpoint: GET /api/students/me
+   */
+  getCurrentStudentProfile: async (): Promise<StudentDetailDto> => {
+    const response = await api.get<StudentDetailDto>(`${url}/me`);
+    return response.data;
+  },
+
+  /**
+   * Lấy thời khóa biểu tuần của sinh viên hiện tại
    * Endpoint: GET /api/students/me/schedule
    * Query params: weekStartDate (optional ISO string)
    */

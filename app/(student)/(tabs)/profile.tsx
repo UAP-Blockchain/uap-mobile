@@ -1,112 +1,118 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  ScrollView,
   StyleSheet,
   Text,
   View,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  clearAuthData,
-  selectAuthLogin,
-} from "../../../lib/features/loginSlice";
-import { AntDesign } from "@expo/vector-icons";
-import { AuthenServices } from "../../../services/auth/authenServices";
-import Toast from "react-native-toast-message";
+import { useSelector } from "react-redux";
+import { selectAuthLogin } from "../../../lib/features/loginSlice";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StudentServices } from "../../../services/student/studentServices";
+import type { StudentDetailDto } from "../../../types/student";
+
+const palette = {
+  primary: "#3674B5",
+  secondary: "#2196F3",
+  background: "#F1F5FF",
+  card: "#FFFFFF",
+  text: "#1F2933",
+  subtitle: "#6B7280",
+  success: "#16a34a",
+};
 
 export default function ProfilePage() {
   const insets = useSafeAreaInsets();
   const auth = useSelector(selectAuthLogin);
-  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+  const [student, setStudent] = useState<StudentDetailDto | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("ProfilePage mounted", auth);
-  }, [auth]);
+    const loadProfile = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await StudentServices.getCurrentStudentProfile();
+        setStudent(data);
+      } catch (err: any) {
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Không thể tải hồ sơ sinh viên.";
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleLogout = () => {
-    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất?", [
-      {
-        text: "Hủy",
-        style: "cancel",
-      },
-      {
-        text: "Đăng xuất",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await AuthenServices.logout();
-            Toast.show({
-              type: "success",
-              text1: "Đăng xuất thành công",
-              text1Style: { textAlign: "center", fontSize: 16 },
-            });
-          } catch (error) {
-            console.error("Error during logout:", error);
-            Toast.show({
-              type: "error",
-              text1: "Không thể đăng xuất. Đăng xuất khỏi thiết bị.",
-              text1Style: { textAlign: "center", fontSize: 16 },
-            });
-          } finally {
-            dispatch(clearAuthData());
-            await AsyncStorage.clear();
-            router.replace("/(auth)/login" as any);
-          }
-        },
-      },
-    ]);
+    void loadProfile();
+  }, []);
+
+  const getInitials = (name?: string | null) => {
+    if (!name) return "SV";
+    const parts = name.split(" ").filter(Boolean);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (
+      parts[0].charAt(0).toUpperCase() +
+      parts[parts.length - 1].charAt(0).toUpperCase()
+    );
   };
 
-  const menuItems = [
-    {
-      title: "Thông tin cá nhân",
-      icon: "user",
-      onPress: () => {
-        // Navigate to personal info
-        Alert.alert("Thông tin", "Tính năng đang phát triển");
-      },
-    },
-    {
-      title: "Thời khóa biểu",
-      icon: "calendar",
-      onPress: () => router.push("/(student)/(tabs)/timetable" as any),
-    },
-    {
-      title: "Điểm danh",
-      icon: "check-circle",
-      onPress: () => router.push("/(student)/(tabs)/attendance" as any),
-    },
-    {
-      title: "Bảng điểm",
-      icon: "bar-chart",
-      onPress: () => {
-        Alert.alert("Bảng điểm", "Tính năng đang phát triển");
-      },
-    },
-    {
-      title: "Cài đặt",
-      icon: "setting",
-      onPress: () => {
-        Alert.alert("Cài đặt", "Tính năng đang phát triển");
-      },
-    },
-    {
-      title: "Đăng xuất",
-      icon: "logout",
-      onPress: handleLogout,
-      isDestructive: true,
-    },
-  ];
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          {
+            paddingTop: insets.top,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <ActivityIndicator size="large" color={palette.primary} />
+        <Text style={{ marginTop: 8, color: palette.subtitle }}>
+          Đang tải hồ sơ sinh viên...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!student) {
+    return (
+      <View
+        style={[
+          styles.container,
+          {
+            paddingTop: insets.top,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <MaterialCommunityIcons
+          name="account-alert"
+          size={48}
+          color={palette.primary}
+        />
+        <Text style={{ marginTop: 8, color: palette.subtitle }}>
+          {error || "Không có dữ liệu sinh viên"}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Header gradient giống web */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Hồ sơ</Text>
+        <Text style={styles.headerTitle}>Hồ sơ sinh viên</Text>
+        <Text style={styles.headerSubtitle}>
+          Quản lý thông tin cá nhân và trạng thái học tập
+        </Text>
       </View>
 
       <ScrollView
@@ -114,72 +120,141 @@ export default function ProfilePage() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Header Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
+        {/* Overview Card */}
+        <View style={styles.overviewCard}>
+          <View style={styles.avatarWrapper}>
             <View style={styles.avatar}>
-              <AntDesign name="user" size={40} color="#FF6600" />
+              <Text style={styles.avatarText}>
+                {getInitials(student.fullName || auth?.userProfile?.userName)}
+              </Text>
             </View>
           </View>
-          <Text style={styles.userName}>
-            {auth?.userProfile?.userName || "Sinh viên"}
-          </Text>
-          <Text style={styles.userCode}>
-            {auth?.userProfile?.code || "Mã sinh viên"}
-          </Text>
-          {auth?.userProfile?.email && (
-            <Text style={styles.userEmail}>{auth.userProfile.email}</Text>
-          )}
+          <Text style={styles.studentName}>{student.fullName}</Text>
+          <Text style={styles.studentCode}>{student.studentCode}</Text>
+          <View style={styles.chipRow}>
+            <View style={styles.chip}>
+              <MaterialCommunityIcons
+                name="email-outline"
+                size={14}
+                color={palette.primary}
+              />
+              <Text style={styles.chipText}>{student.email}</Text>
+            </View>
+          </View>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>GPA</Text>
+              <Text style={styles.statValue}>
+                {typeof student.gpa === "number" ? student.gpa.toFixed(2) : "—"}
+              </Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Lớp hiện tại</Text>
+              <Text style={styles.statValue}>{student.totalClasses}</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Khóa học</Text>
+              <Text style={styles.statValue}>
+                {new Date(student.enrollmentDate).getFullYear()}
+              </Text>
+            </View>
+          </View>
         </View>
 
-        {/* Menu Items */}
-        <View style={styles.menuSection}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.menuItem,
-                index === menuItems.length - 1 && styles.lastMenuItem,
-              ]}
-              onPress={item.onPress}
-              activeOpacity={0.7}
-            >
-              <View style={styles.menuItemLeft}>
-                <View
-                  style={[
-                    styles.menuIconContainer,
-                    item.isDestructive && styles.destructiveIconContainer,
-                  ]}
-                >
-                  <AntDesign
-                    name={item.icon as any}
-                    size={20}
-                    color={item.isDestructive ? "#ff4d4f" : "#FF6600"}
+        {/* Thông tin chi tiết */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Thông tin chung</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Mã sinh viên</Text>
+            <Text style={styles.infoValue}>{student.studentCode}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Họ và tên</Text>
+            <Text style={styles.infoValue}>{student.fullName}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{student.email}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Ngày nhập học</Text>
+            <Text style={styles.infoValue}>
+              {new Date(student.enrollmentDate).toLocaleDateString("vi-VN")}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Trạng thái</Text>
+            <Text style={styles.infoValue}>
+              {student.isActive ? "Hoạt động" : "Không hoạt động"}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Tình trạng tốt nghiệp</Text>
+            <Text style={styles.infoValue}>
+              {student.isGraduated ? "Đã tốt nghiệp" : "Chưa tốt nghiệp"}
+            </Text>
+          </View>
+        </View>
+
+        {/* Hoạt động học tập tổng quan */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Tổng quan học tập</Text>
+          <View style={styles.summaryGrid}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Lớp đã đăng ký</Text>
+              <Text style={styles.summaryValue}>
+                {student.totalEnrollments}
+              </Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Đã duyệt</Text>
+              <Text style={styles.summaryValue}>
+                {student.approvedEnrollments}
+              </Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Đang chờ</Text>
+              <Text style={styles.summaryValue}>
+                {student.pendingEnrollments}
+              </Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Bản ghi điểm</Text>
+              <Text style={styles.summaryValue}>{student.totalGrades}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Bản ghi điểm danh</Text>
+              <Text style={styles.summaryValue}>
+                {student.totalAttendances}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Lớp đang học (rút gọn) */}
+        {student.currentClasses && student.currentClasses.length > 0 && (
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Lớp đang học</Text>
+            {student.currentClasses.slice(0, 3).map((cls) => (
+              <View key={cls.classId} style={styles.classRow}>
+                <View style={styles.classIcon}>
+                  <MaterialCommunityIcons
+                    name="book-open-variant"
+                    size={18}
+                    color={palette.primary}
                   />
                 </View>
-                <Text
-                  style={[
-                    styles.menuItemText,
-                    item.isDestructive && styles.destructiveText,
-                  ]}
-                >
-                  {item.title}
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.classCode}>{cls.classCode}</Text>
+                  <Text style={styles.className}>{cls.subjectName}</Text>
+                  <Text style={styles.classMeta}>
+                    GV: {cls.teacherName} · {cls.credits} tín chỉ
+                  </Text>
+                </View>
               </View>
-              <AntDesign
-                name="right"
-                size={16}
-                color={item.isDestructive ? "#ff4d4f" : "#8c8c8c"}
-              />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* App Info */}
-        <View style={styles.appInfo}>
-          <Text style={styles.appInfoText}>FPT University</Text>
-          <Text style={styles.appVersionText}>Version 1.0.0</Text>
-        </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -188,127 +263,186 @@ export default function ProfilePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    marginBottom: 65, // Space for bottom nav
+    backgroundColor: palette.background,
   },
   header: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e8e8e8",
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: palette.primary,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#262626",
+    color: "#fff",
+  },
+  headerSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: "rgba(255,255,255,0.9)",
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
+    gap: 16,
   },
-  profileCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 24,
-    alignItems: "center",
-    marginBottom: 16,
+  overviewCard: {
+    backgroundColor: palette.card,
+    borderRadius: 16,
+    padding: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  avatarContainer: {
-    marginBottom: 16,
+  avatarWrapper: {
+    alignItems: "center",
+    marginBottom: 12,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#FFF7F0",
+    backgroundColor: "#e0ecff",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 3,
-    borderColor: "#FF6600",
   },
-  userName: {
+  avatarText: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: palette.primary,
+  },
+  studentName: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#262626",
-    marginBottom: 4,
+    fontWeight: "700",
+    color: palette.text,
+    textAlign: "center",
   },
-  userCode: {
-    fontSize: 14,
-    color: "#8c8c8c",
-    marginBottom: 4,
-  },
-  userEmail: {
-    fontSize: 14,
-    color: "#595959",
+  studentCode: {
     marginTop: 4,
+    fontSize: 14,
+    color: palette.subtitle,
+    textAlign: "center",
   },
-  menuSection: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+  chipRow: {
+    marginTop: 10,
+    flexDirection: "row",
+    justifyContent: "center",
   },
-  menuItem: {
+  chip: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "#e0f2fe",
+    gap: 6,
+  },
+  chipText: {
+    fontSize: 12,
+    color: palette.primary,
+  },
+  statsRow: {
+    flexDirection: "row",
     justifyContent: "space-between",
+    marginTop: 16,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  statLabel: {
+    fontSize: 12,
+    color: palette.subtitle,
+  },
+  statValue: {
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "700",
+    color: palette.text,
+  },
+  sectionCard: {
+    backgroundColor: palette.card,
+    borderRadius: 16,
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  lastMenuItem: {
-    borderBottomWidth: 0,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: palette.text,
+    marginBottom: 12,
   },
-  menuItemLeft: {
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 6,
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: palette.subtitle,
+  },
+  infoValue: {
+    fontSize: 13,
+    color: palette.text,
+    maxWidth: "60%",
+    textAlign: "right",
+  },
+  summaryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  summaryItem: {
+    width: "48%",
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: "#f3f4ff",
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: palette.subtitle,
+  },
+  summaryValue: {
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "700",
+    color: palette.text,
+  },
+  classRow: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
+    marginTop: 10,
   },
-  menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFF7F0",
+  classIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#e0ecff",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: 10,
   },
-  destructiveIconContainer: {
-    backgroundColor: "#FFF1F0",
+  classCode: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: palette.primary,
   },
-  menuItemText: {
-    fontSize: 16,
-    color: "#262626",
-    flex: 1,
+  className: {
+    fontSize: 13,
+    color: palette.text,
   },
-  destructiveText: {
-    color: "#ff4d4f",
-  },
-  appInfo: {
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-  appInfoText: {
-    fontSize: 14,
-    color: "#8c8c8c",
-    marginBottom: 4,
-  },
-  appVersionText: {
+  classMeta: {
     fontSize: 12,
-    color: "#bfbfbf",
+    color: palette.subtitle,
   },
 });
