@@ -1,6 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
 import {
   Alert,
   RefreshControl,
@@ -41,6 +42,7 @@ const palette = {
 
 export default function TeacherHomeScreen() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
   const auth = useSelector(selectAuthLogin);
   const dispatch = useDispatch();
@@ -222,6 +224,12 @@ export default function TeacherHomeScreen() {
         style={styles.hero}
       >
         <View style={styles.heroHeader}>
+          <TouchableOpacity
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            style={styles.menuButton}
+      >
+            <MaterialCommunityIcons name="menu" size={24} color="#fff" />
+          </TouchableOpacity>
           <View style={{ flex: 1 }} />
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <MaterialCommunityIcons name="logout" size={20} color="#fff" />
@@ -235,7 +243,7 @@ export default function TeacherHomeScreen() {
             </Text>
             <Text style={styles.heroSubtitle}>
               Quản lý lớp học, điểm danh và chấm điểm ngay tại đây.
-            </Text>
+        </Text>
             <View style={styles.heroChips}>
               <Chip
                 textStyle={{ color: "#fff", fontWeight: "600" }}
@@ -365,8 +373,8 @@ export default function TeacherHomeScreen() {
                   <Text style={styles.classSubject}>{item.subjectName}</Text>
                   <Text style={styles.classTime}>
                     {item.time} • {item.date}
-                  </Text>
-                </View>
+        </Text>
+      </View>
                 <Chip
                   compact
                   style={{ backgroundColor: `${item.statusColor}20` }}
@@ -381,7 +389,7 @@ export default function TeacherHomeScreen() {
             </TouchableOpacity>
           ))}
         </Card>
-      </View>
+    </View>
     </ScrollView>
   );
 }
@@ -399,9 +407,17 @@ const styles = StyleSheet.create({
   },
   heroHeader: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+  },
+  menuButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   logoutButton: {
     width: 40,

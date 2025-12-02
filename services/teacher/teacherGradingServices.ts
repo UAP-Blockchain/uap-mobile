@@ -10,6 +10,9 @@ export interface TeachingClass {
   semesterId?: string;
   semesterName: string;
   totalStudents: number;
+  totalSlots?: number;
+  currentEnrollment?: number;
+  status?: string;
 }
 
 export interface ClassStudent {
@@ -28,6 +31,9 @@ export interface ClassDetail {
   credits?: number;
   semesterId: string;
   semesterName: string;
+  semesterStartDate?: string;
+  semesterEndDate?: string;
+  room?: string;
   students: ClassStudent[];
 }
 
@@ -89,8 +95,10 @@ export const TeacherGradingServices = {
     };
 
     return rawClasses.map((cls) => {
-      const subject = (cls.subject as Record<string, unknown> | undefined) ?? undefined;
-      const semester = (cls.semester as Record<string, unknown> | undefined) ?? undefined;
+      const subject =
+        (cls.subject as Record<string, unknown> | undefined) ?? undefined;
+      const semester =
+        (cls.semester as Record<string, unknown> | undefined) ?? undefined;
 
       return {
         classId: toStringSafe(cls.id ?? cls.classId),
@@ -107,6 +115,11 @@ export const TeacherGradingServices = {
           cls.semesterName ?? semester?.name ?? semester?.semesterName
         ),
         totalStudents: toNumberSafe(cls.totalStudents ?? cls.currentEnrollment),
+        totalSlots: toNumberSafe(cls.totalSlots ?? cls.maxEnrollment),
+        currentEnrollment: toNumberSafe(
+          cls.currentEnrollment ?? cls.totalStudents
+        ),
+        status: toStringSafe(cls.status ?? cls.classStatus),
       } as TeachingClass;
     });
   },
