@@ -270,9 +270,9 @@ export default function TimetablePage() {
         ? apiDay.slots
             .map((slot) => convertSlotToClassInfo(slot))
             .sort((a, b) => {
-              const timeA = a.startTime || "00:00";
-              const timeB = b.startTime || "00:00";
-              return timeA.localeCompare(timeB);
+            const timeA = a.startTime || "00:00";
+            const timeB = b.startTime || "00:00";
+            return timeA.localeCompare(timeB);
             })
         : [];
 
@@ -280,7 +280,7 @@ export default function TimetablePage() {
         ...meta,
         date,
         classes,
-      };
+        };
     });
 
     return days;

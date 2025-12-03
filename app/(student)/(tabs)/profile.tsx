@@ -43,7 +43,7 @@ export default function ProfilePage() {
           err?.message ||
           "Không thể tải hồ sơ sinh viên.";
         setError(message);
-      } finally {
+          } finally {
         setLoading(false);
       }
     };
@@ -86,7 +86,7 @@ export default function ProfilePage() {
       <View
         style={[
           styles.container,
-          {
+    {
             paddingTop: insets.top,
             justifyContent: "center",
             alignItems: "center",
@@ -193,8 +193,8 @@ export default function ProfilePage() {
             <Text style={styles.infoValue}>
               {student.isGraduated ? "Đã tốt nghiệp" : "Chưa tốt nghiệp"}
             </Text>
+            </View>
           </View>
-        </View>
 
         {/* Hoạt động học tập tổng quan */}
         <View style={styles.sectionCard}>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
               <Text style={styles.summaryLabel}>Đang chờ</Text>
               <Text style={styles.summaryValue}>
                 {student.pendingEnrollments}
-              </Text>
+          </Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Bản ghi điểm</Text>
@@ -226,7 +226,7 @@ export default function ProfilePage() {
               <Text style={styles.summaryLabel}>Bản ghi điểm danh</Text>
               <Text style={styles.summaryValue}>
                 {student.totalAttendances}
-              </Text>
+          </Text>
             </View>
           </View>
         </View>
@@ -249,11 +249,11 @@ export default function ProfilePage() {
                   <Text style={styles.className}>{cls.subjectName}</Text>
                   <Text style={styles.classMeta}>
                     GV: {cls.teacherName} · {cls.credits} tín chỉ
-                  </Text>
-                </View>
+                </Text>
               </View>
-            ))}
-          </View>
+              </View>
+          ))}
+        </View>
         )}
       </ScrollView>
     </View>
