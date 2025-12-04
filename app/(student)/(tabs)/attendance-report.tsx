@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,7 +8,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RoadmapServices } from "@/services/student/roadmapServices";
 import { StudentAttendanceServices } from "@/services/student/attendanceServices";
@@ -19,6 +17,7 @@ import type {
   CurriculumRoadmapSubjectDto,
 } from "@/types/roadmap";
 import type { AttendanceDto } from "@/types/attendance";
+import BackHeader from "@/components/BackHeader";
 
 const palette = {
   primary: "#3674B5",
@@ -34,7 +33,6 @@ const palette = {
 };
 
 export default function AttendanceReportPage() {
-  const insets = useSafeAreaInsets();
   const [summary, setSummary] = useState<CurriculumRoadmapSummaryDto | null>(
     null
   );
@@ -227,88 +225,76 @@ export default function AttendanceReportPage() {
     };
   };
 
+  const headerSubtitle =
+    "Xem chi tiết lịch sử điểm danh theo từng môn học và học kỳ";
+  const headerMeta =
+    semesters.length > 0 ? `Tổng học kỳ: ${semesters.length}` : undefined;
+
+  const renderHeader = () => (
+    <BackHeader
+      title="Báo cáo điểm danh"
+      subtitle={headerSubtitle}
+      subtitleSmall={headerMeta}
+      gradientColors={[palette.primary, palette.secondary]}
+      fallbackRoute="/(student)/(tabs)"
+    />
+  );
+
   if (loading) {
     return (
-      <View
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top,
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        ]}
-      >
-        <ActivityIndicator size="large" color={palette.primary} />
-        <Text style={{ marginTop: 8, color: palette.subtitle }}>
-          Đang tải báo cáo điểm danh...
-        </Text>
+      <View style={styles.container}>
+        {renderHeader()}
+        <View style={styles.stateContainer}>
+          <ActivityIndicator size="large" color={palette.primary} />
+          <Text style={{ color: palette.subtitle }}>
+            Đang tải báo cáo điểm danh...
+          </Text>
+        </View>
       </View>
     );
   }
 
   if (error && !summary) {
     return (
-      <View
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top,
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        ]}
-      >
-        <MaterialCommunityIcons
-          name="alert-circle"
-          size={48}
-          color={palette.error}
-        />
-        <Text
-          style={{ marginTop: 12, color: palette.text, textAlign: "center" }}
-        >
-          {error}
-        </Text>
+      <View style={styles.container}>
+        {renderHeader()}
+        <View style={styles.stateContainer}>
+          <MaterialCommunityIcons
+            name="alert-circle"
+            size={48}
+            color={palette.error}
+          />
+          <Text
+            style={{ marginTop: 12, color: palette.text, textAlign: "center" }}
+          >
+            {error}
+          </Text>
+        </View>
       </View>
     );
   }
 
   if (!summary) {
     return (
-      <View
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top,
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        ]}
-      >
-        <MaterialCommunityIcons
-          name="calendar-blank"
-          size={48}
-          color={palette.subtitle}
-        />
-        <Text style={{ marginTop: 12, color: palette.subtitle }}>
-          Chưa có dữ liệu lộ trình học tập
-        </Text>
+      <View style={styles.container}>
+        {renderHeader()}
+        <View style={styles.stateContainer}>
+          <MaterialCommunityIcons
+            name="calendar-blank"
+            size={48}
+            color={palette.subtitle}
+          />
+          <Text style={{ marginTop: 12, color: palette.subtitle }}>
+            Chưa có dữ liệu lộ trình học tập
+          </Text>
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <LinearGradient
-        colors={[palette.primary, palette.secondary]}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Báo cáo điểm danh</Text>
-        <Text style={styles.headerSubtitle}>
-          Xem chi tiết lịch sử điểm danh theo từng môn học
-        </Text>
-      </LinearGradient>
+    <View style={styles.container}>
+      {renderHeader()}
 
       <ScrollView
         style={styles.content}
@@ -566,20 +552,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: palette.background,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingBottom: 24,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.9)",
-    marginTop: 4,
+  stateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 24,
   },
   content: {
     flex: 1,

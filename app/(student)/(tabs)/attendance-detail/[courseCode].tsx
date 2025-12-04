@@ -1,5 +1,4 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -9,10 +8,10 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AntDesign } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { selectAuthLogin } from "../../../../lib/features/loginSlice";
-import { AntDesign } from "@expo/vector-icons";
+import BackHeader from "@/components/BackHeader";
 
 const { width } = Dimensions.get("window");
 
@@ -38,7 +37,6 @@ interface CourseDetails {
 }
 
 export default function AttendanceDetailPage() {
-  const insets = useSafeAreaInsets();
   const { courseCode } = useLocalSearchParams();
   const auth = useSelector(selectAuthLogin);
   const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(
@@ -255,20 +253,14 @@ export default function AttendanceDetailPage() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Custom Header with Orange Gradient */}
-      <LinearGradient colors={["#fa8c16", "#ffc53d"]} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-          <AntDesign name="arrow-left" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Attendance Details</Text>
-          <View style={{ width: 24 }} />
-        </View>
-      </LinearGradient>
+    <View style={styles.container}>
+      <BackHeader
+        title="Attendance Details"
+        subtitle={`${courseDetails.courseCode} - ${courseDetails.courseName}`}
+        subtitleSmall={`Class: ${courseDetails.className}`}
+        gradientColors={["#fa8c16", "#ffc53d"]}
+        fallbackRoute="/(student)/(tabs)/attendance"
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Course Info Card */}
@@ -341,24 +333,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: 20,
-  },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
   },
   content: {
     flex: 1,

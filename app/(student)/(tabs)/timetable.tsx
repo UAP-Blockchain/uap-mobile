@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -11,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { selectAuthLogin } from "../../../lib/features/loginSlice";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -22,6 +20,7 @@ import type {
   DailyScheduleDto,
 } from "../../../types/schedule";
 import Toast from "react-native-toast-message";
+import BackHeader from "@/components/BackHeader";
 
 const palette = {
   primary: "#3674B5",
@@ -129,7 +128,6 @@ const formatWeekRange = (date: Date): string => {
 };
 
 export default function TimetablePage() {
-  const insets = useSafeAreaInsets();
   const auth = useSelector(selectAuthLogin);
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [weeklySchedule, setWeeklySchedule] =
@@ -270,9 +268,9 @@ export default function TimetablePage() {
         ? apiDay.slots
             .map((slot) => convertSlotToClassInfo(slot))
             .sort((a, b) => {
-            const timeA = a.startTime || "00:00";
-            const timeB = b.startTime || "00:00";
-            return timeA.localeCompare(timeB);
+              const timeA = a.startTime || "00:00";
+              const timeB = b.startTime || "00:00";
+              return timeA.localeCompare(timeB);
             })
         : [];
 
@@ -280,7 +278,7 @@ export default function TimetablePage() {
         ...meta,
         date,
         classes,
-        };
+      };
     });
 
     return days;
@@ -458,56 +456,42 @@ export default function TimetablePage() {
     [renderClassCard]
   );
 
-  return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <LinearGradient
-        colors={[palette.primary, palette.secondary]}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-          <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>Thời Khóa Biểu</Text>
-            <Text style={styles.headerSubtitle}>
-              {weeklySchedule?.weekLabel ||
-                `Tuần: ${formatWeekRange(selectedWeek)}`}
-            </Text>
-            {weeklySchedule && (
-              <Text style={styles.headerMeta}>
-                Tổng số ca: {weeklySchedule.totalSlots}
-              </Text>
-            )}
-          </View>
+  const headerSubtitle =
+    weeklySchedule?.weekLabel || `Tuần: ${formatWeekRange(selectedWeek)}`;
+  const headerMeta = weeklySchedule
+    ? `Tổng số ca: ${weeklySchedule.totalSlots}`
+    : undefined;
 
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={() => handleWeekChange("prev")}
-            >
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={20}
-                color="#fff"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={handleCurrentWeek}
-            >
-              <Text style={styles.currentWeekText}>Hôm nay</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={() => handleWeekChange("next")}
-            >
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={20}
-                color="#fff"
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </LinearGradient>
+  const headerRightControls = (
+    <View style={styles.headerActions}>
+      <TouchableOpacity
+        style={styles.navButton}
+        onPress={() => handleWeekChange("prev")}
+      >
+        <MaterialCommunityIcons name="chevron-left" size={20} color="#fff" />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.navButton} onPress={handleCurrentWeek}>
+        <Text style={styles.currentWeekText}>Hôm nay</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.navButton}
+        onPress={() => handleWeekChange("next")}
+      >
+        <MaterialCommunityIcons name="chevron-right" size={20} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <BackHeader
+        title="Thời Khóa Biểu"
+        subtitle={headerSubtitle}
+        subtitleSmall={headerMeta}
+        gradientColors={[palette.primary, palette.secondary]}
+        rightContent={headerRightControls}
+        fallbackRoute="/(student)/(tabs)"
+      />
 
       {isLoading && !refreshing ? (
         <View style={styles.loadingContainer}>
@@ -584,32 +568,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingBottom: 24,
-  },
-  headerContent: {
-    gap: 16,
-  },
-  headerInfo: {
-    gap: 4,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "#fff",
-    opacity: 0.95,
-  },
-  headerMeta: {
-    fontSize: 14,
-    color: "#fff",
-    opacity: 0.85,
   },
   headerActions: {
     flexDirection: "row",

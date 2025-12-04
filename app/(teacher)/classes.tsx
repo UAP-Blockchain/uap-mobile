@@ -1,5 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -12,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TeacherGradingServices } from "../../services/teacher/teacherGradingServices";
 import type {
@@ -21,6 +18,7 @@ import type {
   ClassStudent,
 } from "../../services/teacher/teacherGradingServices";
 import Toast from "react-native-toast-message";
+import BackHeader from "@/components/BackHeader";
 
 const palette = {
   primary: "#3674B5",
@@ -36,7 +34,6 @@ const palette = {
 };
 
 export default function TeacherClassesScreen() {
-  const insets = useSafeAreaInsets();
   const [classes, setClasses] = useState<TeachingClass[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [classDetail, setClassDetail] = useState<ClassDetail | null>(null);
@@ -147,26 +144,15 @@ export default function TeacherClassesScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <LinearGradient
-        colors={[palette.primary, palette.secondary]}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <MaterialCommunityIcons name="arrow-left" size={22} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>Lớp Giảng Dạy</Text>
-            <Text style={styles.headerSubtitle}>
-              {classes.length} lớp • {selectedClassSummary?.semesterName || ""}
-            </Text>
-          </View>
-        </View>
-      </LinearGradient>
+    <View style={styles.container}>
+      <BackHeader
+        title="Lớp Giảng Dạy"
+        subtitle={`${classes.length} lớp • ${
+          selectedClassSummary?.semesterName || ""
+        }`}
+        gradientColors={[palette.primary, palette.secondary]}
+        fallbackRoute="/(teacher)"
+      />
 
       {/* Class Selector */}
       <View style={styles.selectorContainer}>
@@ -489,33 +475,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: 20,
-  },
-  headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#fff",
-    opacity: 0.9,
   },
   selectorContainer: {
     backgroundColor: palette.card,

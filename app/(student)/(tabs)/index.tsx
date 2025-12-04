@@ -63,10 +63,10 @@ export default function HomePage() {
         onPress: () => router.push("/(student)/(tabs)/timetable" as any),
       },
       {
-        title: "Điểm danh",
-        icon: "check-circle",
-        gradient: ["#5FE3A1", "#31B679"],
-        onPress: () => router.push("/(student)/(tabs)/attendance" as any),
+        title: "Chứng chỉ của tôi",
+        icon: "shield-check",
+        gradient: ["#BC99FF", "#8155E5"],
+        onPress: () => router.push("/(student)/(tabs)/my-credentials" as any),
       },
       {
         title: "Báo cáo điểm danh",
@@ -86,12 +86,6 @@ export default function HomePage() {
         icon: "route",
         gradient: ["#34d399", "#059669"],
         onPress: () => router.push("/(student)/(tabs)/roadmap" as any),
-      },
-      {
-        title: "Chứng chỉ",
-        icon: "shield-check",
-        gradient: ["#BC99FF", "#8155E5"],
-        onPress: () => router.push("/(student)/(tabs)/student-home" as any),
       },
     ],
     []

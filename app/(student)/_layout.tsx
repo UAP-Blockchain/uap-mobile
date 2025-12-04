@@ -77,14 +77,14 @@ export default function DrawerLayout() {
         </Pressable>
 
         <Pressable
-          onPress={() => router.push("/(student)/(tabs)/attendance" as any)}
+          onPress={() => router.push("/(student)/(tabs)/my-credentials" as any)}
           style={({ pressed }) => ({
             backgroundColor: pressed ? "#f0f0f0" : "transparent",
             borderRadius: 8,
             padding: 16,
           })}
         >
-          <Text style={{ fontSize: 16, color: "#333" }}>Điểm danh</Text>
+          <Text style={{ fontSize: 16, color: "#333" }}>Chứng chỉ của tôi</Text>
         </Pressable>
 
         <Pressable
@@ -121,8 +121,6 @@ export default function DrawerLayout() {
         >
           <Text style={{ fontSize: 16, color: "#333" }}>Lộ trình học</Text>
         </Pressable>
-
-      
 
         <View style={{ marginTop: "auto", padding: 16 }}>
           <Pressable

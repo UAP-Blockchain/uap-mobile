@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -9,8 +8,7 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AntDesign } from "@expo/vector-icons";
+import BackHeader from "@/components/BackHeader";
 
 const { width } = Dimensions.get("window");
 
@@ -23,7 +21,6 @@ interface CourseReport {
 }
 
 export default function MarkReportPage() {
-  const insets = useSafeAreaInsets();
   const [selectedSemester, setSelectedSemester] = useState("fall2025");
 
   // Mock semester data
@@ -104,21 +101,21 @@ export default function MarkReportPage() {
     );
   };
 
+  const activeSemester = semesters.find(
+    (semester) => semester.id === selectedSemester
+  );
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <LinearGradient colors={["#3674B5", "#1890ff"]} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-          <AntDesign name="arrow-left" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Mark Report</Text>
-          <View style={{ width: 24 }} />
-        </View>
-      </LinearGradient>
+    <View style={styles.container}>
+      <BackHeader
+        title="Mark Report"
+        subtitle={
+          activeSemester ? `Học kỳ: ${activeSemester.name}` : undefined
+        }
+        subtitleSmall={`Tổng môn: ${courseReports.length}`}
+        gradientColors={["#3674B5", "#1890ff"]}
+        fallbackRoute="/(student)/(tabs)"
+      />
 
       <View style={styles.content}>
         {/* Semester Selection */}
@@ -168,24 +165,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: 20,
-  },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
   },
   content: {
     flex: 1,

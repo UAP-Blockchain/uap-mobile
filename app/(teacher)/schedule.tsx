@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -11,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TeacherServices } from "../../services/teacher/teacherServices";
 import type {
@@ -20,6 +18,7 @@ import type {
   DailyScheduleDto,
 } from "../../types/schedule";
 import Toast from "react-native-toast-message";
+import BackHeader from "@/components/BackHeader";
 
 const palette = {
   primary: "#3674B5",
@@ -128,7 +127,6 @@ const formatWeekRange = (date: Date): string => {
 };
 
 export default function TeacherScheduleScreen() {
-  const insets = useSafeAreaInsets();
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [weeklySchedule, setWeeklySchedule] =
     useState<WeeklyScheduleDto | null>(null);
@@ -443,54 +441,42 @@ export default function TeacherScheduleScreen() {
     [renderClassCard]
   );
 
-  return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <LinearGradient
-        colors={[palette.primary, palette.secondary]}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <MaterialCommunityIcons name="arrow-left" size={22} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>Lịch Giảng Dạy</Text>
-            <Text style={styles.headerSubtitle}>
-              {weeklySchedule?.weekLabel ||
-                `Tuần: ${formatWeekRange(selectedWeek)}`}
-            </Text>
-            {weeklySchedule && (
-              <Text style={styles.headerMeta}>
-                Tổng số ca: {weeklySchedule.totalSlots}
-              </Text>
-            )}
-          </View>
+  const headerSubtitle =
+    weeklySchedule?.weekLabel || `Tuần: ${formatWeekRange(selectedWeek)}`;
+  const headerMeta = weeklySchedule
+    ? `Tổng số ca: ${weeklySchedule.totalSlots}`
+    : undefined;
 
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={() => handleWeekChange("prev")}
-            >
-              <MaterialCommunityIcons name="chevron-left" size={20} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={handleCurrentWeek}
-            >
-              <Text style={styles.currentWeekText}>Hôm nay</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={() => handleWeekChange("next")}
-            >
-              <MaterialCommunityIcons name="chevron-right" size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </LinearGradient>
+  const headerRightControls = (
+    <View style={styles.headerActions}>
+      <TouchableOpacity
+        style={styles.navButton}
+        onPress={() => handleWeekChange("prev")}
+      >
+        <MaterialCommunityIcons name="chevron-left" size={20} color="#fff" />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.navButton} onPress={handleCurrentWeek}>
+        <Text style={styles.currentWeekText}>Hôm nay</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.navButton}
+        onPress={() => handleWeekChange("next")}
+      >
+        <MaterialCommunityIcons name="chevron-right" size={20} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <BackHeader
+        title="Lịch Giảng Dạy"
+        subtitle={headerSubtitle}
+        subtitleSmall={headerMeta}
+        gradientColors={[palette.primary, palette.secondary]}
+        rightContent={headerRightControls}
+        fallbackRoute="/(teacher)"
+      />
 
       {isLoading && !refreshing ? (
         <View style={styles.loadingContainer}>
@@ -567,36 +553,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingBottom: 24,
-  },
-  headerContent: {
-    gap: 16,
-  },
-  backButton: {
-    padding: 4,
-    marginBottom: 8,
-  },
-  headerInfo: {
-    gap: 4,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "#fff",
-    opacity: 0.95,
-  },
-  headerMeta: {
-    fontSize: 14,
-    color: "#fff",
-    opacity: 0.85,
   },
   headerActions: {
     flexDirection: "row",

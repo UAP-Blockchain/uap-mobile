@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -11,14 +10,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import type {
   SlotAttendanceDto,
   StudentAttendanceDetailDto,
   StudentAttendanceDto,
 } from "@/types/attendance";
 import { TeacherAttendanceServices } from "@/services/teacher/teacherAttendanceServices";
+import BackHeader from "@/components/BackHeader";
 
 type Params = {
   slotId?: string;
@@ -36,7 +35,6 @@ interface AttendanceState {
 }
 
 export default function TeacherAttendanceScreen() {
-  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<Params>();
 
   const [slotAttendance, setSlotAttendance] =
@@ -281,34 +279,24 @@ export default function TeacherAttendanceScreen() {
     );
   };
 
+  const classCodeLabel = params.classCode || slotAttendance?.classCode || "";
+  const subjectLabel = params.subjectName || slotAttendance?.subjectName || "";
+  const scheduleLabel = [params.date || slotAttendance?.date, params.timeSlotName || slotAttendance?.timeSlotName]
+    .filter(Boolean)
+    .join(" • ");
+  const headerTitle = classCodeLabel
+    ? `Điểm danh - ${classCodeLabel}`
+    : "Điểm danh";
+
   return (
-    <View
-      style={[styles.container, { paddingTop: insets.top, paddingBottom: 8 }]}
-    >
-      {/* Header */}
-      <LinearGradient colors={["#3674B5", "#1890ff"]} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <AntDesign name="arrow-left" size={22} color="#fff" />
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>
-              Điểm danh - {params.classCode || slotAttendance?.classCode || ""}
-            </Text>
-            <Text style={styles.headerSubtitle}>
-              {params.subjectName || slotAttendance?.subjectName || ""}
-            </Text>
-            <Text style={styles.headerSubtitleSmall}>
-              {params.date || slotAttendance?.date} •{" "}
-              {params.timeSlotName || slotAttendance?.timeSlotName}
-            </Text>
-          </View>
-          <View style={{ width: 24 }} />
-        </View>
-      </LinearGradient>
+    <View style={styles.container}>
+      <BackHeader
+        title={headerTitle}
+        subtitle={subjectLabel || undefined}
+        subtitleSmall={scheduleLabel || undefined}
+        gradientColors={["#3674B5", "#1890ff"]}
+        fallbackRoute="/(teacher)"
+      />
 
       {loading && (
         <View style={styles.loadingContainer}>
@@ -407,34 +395,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingBottom: 18,
-  },
-  headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButton: {
-    padding: 4,
-    marginRight: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#e6f7ff",
-    marginTop: 2,
-  },
-  headerSubtitleSmall: {
-    fontSize: 12,
-    color: "#d6e4ff",
-    marginTop: 2,
   },
   loadingContainer: {
     flex: 1,

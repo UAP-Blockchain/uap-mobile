@@ -1,5 +1,4 @@
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -9,7 +8,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RoadmapServices } from "@/services/student/roadmapServices";
 import type {
@@ -17,6 +15,7 @@ import type {
   CurriculumSemesterDto,
   CurriculumRoadmapSubjectDto,
 } from "@/types/roadmap";
+import BackHeader from "@/components/BackHeader";
 
 const palette = {
   primary: "#3674B5",
@@ -32,16 +31,13 @@ const palette = {
 };
 
 export default function RoadmapPage() {
-  const insets = useSafeAreaInsets();
   const [summary, setSummary] = useState<CurriculumRoadmapSummaryDto | null>(
     null
   );
   const [semesterDetails, setSemesterDetails] = useState<
     Record<number, CurriculumRoadmapSubjectDto[]>
   >({});
-  const [loadingSemesters, setLoadingSemesters] = useState<
-    Record<number, boolean>
-  >({});
+  const [, setLoadingSemesters] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,25 +62,28 @@ export default function RoadmapPage() {
     }
   };
 
-  const loadSemester = async (semesterNumber: number) => {
-    if (semesterDetails[semesterNumber]) return;
-    setLoadingSemesters((prev) => ({ ...prev, [semesterNumber]: true }));
-    try {
-      const data: CurriculumSemesterDto =
-        await RoadmapServices.getMyCurriculumSemester(semesterNumber);
-      setSemesterDetails((prev) => ({
-        ...prev,
-        [semesterNumber]: data.subjects,
-      }));
-    } catch (err) {
-      // giữ nguyên, sẽ hiển thị rỗng nếu lỗi
-    } finally {
-      setLoadingSemesters((prev) => ({
-        ...prev,
-        [semesterNumber]: false,
-      }));
-    }
-  };
+  const loadSemester = useCallback(
+    async (semesterNumber: number) => {
+      if (semesterDetails[semesterNumber]) return;
+      setLoadingSemesters((prev) => ({ ...prev, [semesterNumber]: true }));
+      try {
+        const data: CurriculumSemesterDto =
+          await RoadmapServices.getMyCurriculumSemester(semesterNumber);
+        setSemesterDetails((prev) => ({
+          ...prev,
+          [semesterNumber]: data.subjects,
+        }));
+      } catch {
+        // giữ nguyên, sẽ hiển thị rỗng nếu lỗi
+      } finally {
+        setLoadingSemesters((prev) => ({
+          ...prev,
+          [semesterNumber]: false,
+        }));
+      }
+    },
+    [semesterDetails]
+  );
 
   useEffect(() => {
     void loadSummary();
@@ -99,7 +98,7 @@ export default function RoadmapPage() {
     // Mặc định mở kỳ đầu tiên giống web
     const first = summary.semesterSummaries[0].semesterNumber;
     setExpandedSemesters((prev) => ({ ...prev, [first]: true }));
-  }, [summary]);
+  }, [summary, loadSemester]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -175,90 +174,81 @@ export default function RoadmapPage() {
     }
   };
 
+  const headerSubtitle =
+    completionStats.total > 0
+      ? `Hoàn thành ${completionStats.completed}/${completionStats.total} môn`
+      : "Theo dõi tiến độ lộ trình học tập";
+  const headerMeta =
+    completionStats.total > 0
+      ? `Tiến độ: ${completionStats.percentage.toFixed(1)}%`
+      : undefined;
+
+  const renderHeader = () => (
+    <BackHeader
+      title="Lộ trình học tập"
+      subtitle={headerSubtitle}
+      subtitleSmall={headerMeta}
+      gradientColors={[palette.primary, palette.secondary]}
+      fallbackRoute="/(student)/(tabs)"
+    />
+  );
+
   if (loading) {
     return (
-      <View
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top,
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        ]}
-      >
-        <ActivityIndicator size="large" color={palette.primary} />
-        <Text style={{ marginTop: 8, color: palette.subtitle }}>
-          Đang tải lộ trình học tập...
-        </Text>
+      <View style={styles.container}>
+        {renderHeader()}
+        <View style={styles.stateContainer}>
+          <ActivityIndicator size="large" color={palette.primary} />
+          <Text style={{ color: palette.subtitle }}>
+            Đang tải lộ trình học tập...
+          </Text>
+        </View>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top,
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        ]}
-      >
-        <MaterialCommunityIcons
-          name="alert-circle"
-          size={48}
-          color={palette.error}
-        />
-        <Text
-          style={{ marginTop: 12, color: palette.text, textAlign: "center" }}
-        >
-          {error}
-        </Text>
+      <View style={styles.container}>
+        {renderHeader()}
+        <View style={styles.stateContainer}>
+          <MaterialCommunityIcons
+            name="alert-circle"
+            size={48}
+            color={palette.error}
+          />
+          <Text
+            style={{ marginTop: 12, color: palette.text, textAlign: "center" }}
+          >
+            {error}
+          </Text>
+        </View>
       </View>
     );
   }
 
   if (!summary) {
     return (
-      <View
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top,
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        ]}
-      >
-        <MaterialCommunityIcons
-          name="school-outline"
-          size={48}
-          color={palette.subtitle}
-        />
-        <Text style={{ marginTop: 12, color: palette.subtitle }}>
-          Chưa có dữ liệu lộ trình học tập
-        </Text>
+      <View style={styles.container}>
+        {renderHeader()}
+        <View style={styles.stateContainer}>
+          <MaterialCommunityIcons
+            name="school-outline"
+            size={48}
+            color={palette.subtitle}
+          />
+          <Text style={{ marginTop: 12, color: palette.subtitle }}>
+            Chưa có dữ liệu lộ trình học tập
+          </Text>
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <LinearGradient
-        colors={[palette.primary, palette.secondary]}
-        style={styles.header}
-      >
-        <Text style={styles.headerEyebrow}>LỘ TRÌNH HỌC TẬP</Text>
-        <Text style={styles.headerTitle}>Lộ trình học tập</Text>
-        <Text style={styles.headerSubtitle}>
-          Hoàn thành {completionStats.completed}/{completionStats.total} môn ·{" "}
-          {completionStats.percentage.toFixed(1)}%
-        </Text>
-
+    <View style={styles.container}>
+      {renderHeader()}
+      <View style={styles.headerStatsContainer}>
         <View style={styles.headerStatsRow}>
           <View style={styles.headerStatCard}>
             <Text style={styles.headerStatLabel}>Đang học</Text>
@@ -277,7 +267,7 @@ export default function RoadmapPage() {
             <Text style={styles.headerStatValue}>{completionStats.failed}</Text>
           </View>
         </View>
-      </LinearGradient>
+      </View>
 
       {/* Content */}
       <ScrollView
@@ -409,44 +399,43 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingBottom: 24,
   },
-  headerEyebrow: {
-    fontSize: 12,
-    color: "rgba(255,255,255,0.9)",
-    letterSpacing: 1,
-    textTransform: "uppercase",
+  stateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 24,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-    marginTop: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.9)",
-    marginTop: 4,
+  headerStatsContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   headerStatsRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 16,
   },
   headerStatCard: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.12)",
+    backgroundColor: palette.card,
     borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   headerStatLabel: {
     fontSize: 12,
-    color: "rgba(255,255,255,0.95)",
+    color: palette.subtitle,
     marginBottom: 4,
   },
   headerStatValue: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#fff",
+    color: palette.primary,
   },
   content: {
     flex: 1,

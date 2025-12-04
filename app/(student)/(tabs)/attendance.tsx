@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -9,10 +8,9 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { selectAuthLogin } from "../../../lib/features/loginSlice";
-import { AntDesign } from "@expo/vector-icons";
+import BackHeader from "@/components/BackHeader";
 
 const { width } = Dimensions.get("window");
 
@@ -29,7 +27,6 @@ interface CourseAttendance {
 }
 
 export default function AttendancePage() {
-  const insets = useSafeAreaInsets();
   const auth = useSelector(selectAuthLogin);
   const [selectedSemester, setSelectedSemester] = useState("fall2025");
 
@@ -190,21 +187,28 @@ export default function AttendancePage() {
     );
   };
 
+  const activeSemester = semesters.find(
+    (semester) => semester.id === selectedSemester
+  );
+  const studentDisplayName =
+    (auth as any)?.user?.fullName ||
+    (auth as any)?.profile?.fullName ||
+    (auth as any)?.user?.email ||
+    undefined;
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <LinearGradient colors={["#3674B5", "#1890ff"]} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <AntDesign name="arrow-left" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Attendance Report</Text>
-          <View style={{ width: 24 }} />
-        </View>
-      </LinearGradient>
+    <View style={styles.container}>
+      <BackHeader
+        title="Attendance Report"
+        subtitle={
+          activeSemester ? `Học kỳ: ${activeSemester.name}` : undefined
+        }
+        subtitleSmall={
+          studentDisplayName ? `Sinh viên: ${studentDisplayName}` : undefined
+        }
+        gradientColors={["#3674B5", "#1890ff"]}
+        fallbackRoute="/(student)/(tabs)"
+      />
 
       <View style={styles.content}>
         {/* Semester Selection */}
@@ -246,24 +250,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: 20,
-  },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
   },
   content: {
     flex: 1,

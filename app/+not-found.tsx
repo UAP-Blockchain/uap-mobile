@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BackHeader from "@/components/BackHeader";
 
 export default function NotFoundScreen() {
   const insets = useSafeAreaInsets();
@@ -22,16 +23,15 @@ export default function NotFoundScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <LinearGradient
-        colors={["#3674B5", "#2196F3"]}
-        style={styles.headerGradient}
-      >
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <AntDesign name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Lỗi</Text>
-        <View style={styles.placeholder} />
-      </LinearGradient>
+      <BackHeader
+        title="Lỗi"
+        subtitle="Không tìm thấy trang"
+        gradientColors={["#3674B5", "#2196F3"]}
+        onBackPress={handleGoBack}
+        titleAlign="center"
+        rightContent={<View style={{ width: 40 }} />}
+        fallbackRoute="/(student)/(tabs)"
+      />
 
       <View style={styles.content}>
         <View style={styles.errorIconContainer}>
@@ -97,26 +97,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-  },
-  headerGradient: {
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-    flex: 1,
-    textAlign: "center",
-  },
-  placeholder: {
-    width: 40,
   },
   content: {
     flex: 1,
