@@ -456,8 +456,7 @@ export default function TimetablePage() {
     [renderClassCard]
   );
 
-  const headerSubtitle =
-    weeklySchedule?.weekLabel || `Tuần: ${formatWeekRange(selectedWeek)}`;
+  const headerSubtitle = `Tuần: ${formatWeekRange(selectedWeek)}`;
   const headerMeta = weeklySchedule
     ? `Tổng số ca: ${weeklySchedule.totalSlots}`
     : undefined;
@@ -471,7 +470,7 @@ export default function TimetablePage() {
         <MaterialCommunityIcons name="chevron-left" size={20} color="#fff" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.navButton} onPress={handleCurrentWeek}>
-        <Text style={styles.currentWeekText}>Hôm nay</Text>
+        <Text style={styles.currentWeekText}>Tuần này</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.navButton}

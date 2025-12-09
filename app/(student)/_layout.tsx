@@ -161,8 +161,12 @@ export default function DrawerLayout() {
               pressed && styles.logoutButtonPressed,
             ]}
           >
-            <MaterialCommunityIcons name="logout" size={22} color={palette.danger} />
-            <Text style={styles.logoutText}>Logout</Text>
+            <MaterialCommunityIcons
+              name="logout"
+              size={22}
+              color={palette.danger}
+            />
+            <Text style={styles.logoutText}>Đăng xuất</Text>
           </Pressable>
         </View>
       </View>
