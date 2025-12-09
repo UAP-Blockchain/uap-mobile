@@ -154,7 +154,7 @@ export default function TeacherLayout() {
 
           <Pressable
             onPress={() => {
-              Alert.alert("Thông báo", "Tính năng đang phát triển");
+              router.push("/(teacher)/profile" as any);
             }}
             style={({ pressed }) => [
               styles.menuItem,
@@ -164,11 +164,9 @@ export default function TeacherLayout() {
             <MaterialCommunityIcons
               name="account"
               size={24}
-              color={palette.subtitle}
+              color={palette.primary}
             />
-            <Text style={[styles.menuItemText, { color: palette.subtitle }]}>
-              Thông tin cá nhân
-            </Text>
+            <Text style={styles.menuItemText}>Thông tin cá nhân</Text>
           </Pressable>
 
           <Pressable
@@ -255,6 +253,13 @@ export default function TeacherLayout() {
           options={{
             drawerLabel: "Điểm danh",
             title: "Điểm danh",
+          }}
+        />
+        <Drawer.Screen
+          name="profile"
+          options={{
+            drawerLabel: "Thông tin cá nhân",
+            title: "Thông tin cá nhân",
           }}
         />
       </Drawer>
