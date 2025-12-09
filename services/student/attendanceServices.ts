@@ -18,6 +18,30 @@ interface AttendanceStatsResponse {
 
 const baseUrl = "/students";
 
+const buildStatisticsFromRecords = (
+  records: AttendanceDto[]
+): AttendanceStatisticsDto => {
+  const totalSlots = records.length;
+  const presentCount = records.filter((r) => r.isPresent).length;
+  const excusedCount = records.filter((r) => !r.isPresent && r.isExcused).length;
+  const absentCount = records.filter((r) => !r.isPresent && !r.isExcused).length;
+  const attendanceRate =
+    totalSlots === 0 ? 0 : Math.round((presentCount / totalSlots) * 100);
+
+  const first = records[0];
+  return {
+    studentId: first?.studentId ?? "",
+    studentCode: first?.studentCode ?? "",
+    studentName: first?.studentName ?? "",
+    totalSlots,
+    presentCount,
+    absentCount,
+    excusedCount,
+    attendanceRate,
+    attendanceRecords: records,
+  };
+};
+
 export const StudentAttendanceServices = {
   /**
    * Lấy lịch sử điểm danh của sinh viên hiện tại
@@ -47,18 +71,30 @@ export const StudentAttendanceServices = {
   getMyAttendanceStatistics: async (
     classId?: string
   ): Promise<AttendanceStatisticsDto> => {
-    const response = await api.get<AttendanceStatsResponse>(
-      `${baseUrl}/me/attendance/statistics`,
-      {
-        params: classId ? { classId } : undefined,
+    try {
+      const response = await api.get<AttendanceStatsResponse>(
+        `${baseUrl}/me/attendance/statistics`,
+        {
+          params: classId ? { classId } : undefined,
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error("Không thể tải thống kê điểm danh.");
       }
-    );
 
-    if (!response.data.success) {
-      throw new Error("Không thể tải thống kê điểm danh.");
+      return response.data.data;
+    } catch (error: any) {
+      // Backend trả 500, tự tính dựa trên danh sách điểm danh để không chặn UI
+      const status = error?.response?.status as number | undefined;
+      if (!status || status >= 500) {
+        const records = await StudentAttendanceServices.getMyAttendance(
+          classId ? { ClassId: classId } : undefined
+        );
+        return buildStatisticsFromRecords(records);
+      }
+      throw error;
     }
-
-    return response.data.data;
   },
 };
 

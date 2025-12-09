@@ -29,19 +29,23 @@ export default function TeacherLayout() {
   const handleLogout = useCallback(async () => {
     try {
       await AuthenServices.logout();
+    } catch (error: any) {
+      const status = error?.response?.status;
+      // Nếu token hết hạn (401) coi như đã đăng xuất thành công
+      if (status !== 401) {
+        console.error("Error during logout:", error);
+        Toast.show({
+          type: "error",
+          text1: "Không thể gọi API. Đã đăng xuất khỏi thiết bị.",
+          text1Style: { textAlign: "center", fontSize: 16 },
+        });
+      }
+    } finally {
       Toast.show({
         type: "success",
         text1: "Đăng xuất thành công",
         text1Style: { textAlign: "center", fontSize: 16 },
       });
-    } catch (error: any) {
-      console.error("Error during logout:", error);
-      Toast.show({
-        type: "error",
-        text1: "Không thể gọi API. Đã đăng xuất khỏi thiết bị.",
-        text1Style: { textAlign: "center", fontSize: 16 },
-      });
-    } finally {
       dispatch(clearAuthData());
       await AsyncStorage.clear();
       router.replace("/(auth)/login" as any);

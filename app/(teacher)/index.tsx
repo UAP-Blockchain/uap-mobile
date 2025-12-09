@@ -67,11 +67,8 @@ export default function TeacherHomeScreen() {
         icon: "account-check",
         gradient: ["#5FE3A1", "#31B679"],
         onPress: () => {
-          // Navigate to attendance screen - cần có slotId từ lịch giảng dạy
-          Alert.alert(
-            "Thông báo",
-            "Vui lòng chọn slot từ lịch giảng dạy để điểm danh"
-          );
+          // Đưa về lịch giảng dạy để chọn slot và mở điểm danh (tương tự web)
+          router.push("/(teacher)/schedule" as any);
         },
       },
       {

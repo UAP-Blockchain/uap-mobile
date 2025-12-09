@@ -139,7 +139,7 @@ export default function HomePage() {
       },
       {
         title: "Lộ trình học",
-        icon: "route",
+        icon: "map-marker-path",
         gradient: ["#34d399", "#059669"],
         onPress: () => router.push("/(student)/(tabs)/roadmap" as any),
       },
@@ -289,32 +289,6 @@ export default function HomePage() {
             style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
             labelStyle={{ color: "#fff", fontWeight: "600" }}
           />
-        </View>
-        <View style={styles.heroActions}>
-          <TouchableOpacity
-            style={styles.heroButton}
-            onPress={() => router.push("/(student)/(tabs)/student-home" as any)}
-          >
-            <MaterialCommunityIcons
-              name="share-variant"
-              size={20}
-              color="#fff"
-            />
-            <Text style={styles.heroButtonText}>Chia sẻ chứng chỉ</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.heroButton, styles.heroButtonOutline]}
-            onPress={() => router.push("/public-portal" as any)}
-          >
-            <MaterialCommunityIcons
-              name="qrcode"
-              size={20}
-              color={palette.primary}
-            />
-            <Text style={[styles.heroButtonText, { color: palette.primary }]}>
-              Tạo mã QR
-            </Text>
-          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -519,29 +493,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     marginTop: 12,
-  },
-  heroActions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 20,
-  },
-  heroButton: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingVertical: 12,
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  heroButtonOutline: {
-    backgroundColor: "#fff",
-  },
-  heroButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 14,
   },
   section: {
     paddingHorizontal: 20,

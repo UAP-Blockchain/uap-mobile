@@ -2,9 +2,18 @@ import { setAuthData } from "@/lib/features/loginSlice";
 import { store } from "@/lib/store";
 import axios from "axios";
 
+// Đồng bộ với web: dùng đúng URL API; loại bỏ dấu "/" cuối để tránh // khi ghép path
+const API_BASE_URL = (
+  process.env.EXPO_PUBLIC_API_URL ||
+  "https://uap-blockchain.azurewebsites.net/api"
+).replace(/\/+$/, "");
+
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  baseURL: API_BASE_URL,
 });
+
+// Giữ refreshPromise ngoài interceptor để tránh tạo nhiều request refresh song song
+let refreshPromise: Promise<any> | null = null;
 
 // Add a request interceptor
 api.interceptors.request.use(
@@ -36,17 +45,14 @@ api.interceptors.request.use(
       const timeLeft = expDate - currentTime;
       const timeLeftInMinutes = Math.floor(timeLeft / 60);
       // CHỈ refresh token, không logout
-      let refreshPromise: Promise<any> | null = null;
       if (timeLeftInMinutes > 0 && timeLeftInMinutes < 8) {
         if (!refreshPromise) {
           try {
+            const refreshUrl = `${API_BASE_URL}/Auth/refresh-token`;
             refreshPromise = axios
-              .post(
-                `${process.env.EXPO_PUBLIC_API_URL}/v1/auth/refresh-token`,
-                {
-                  refreshToken: refreshToken,
-                }
-              )
+              .post(refreshUrl, {
+                refreshToken: refreshToken,
+              })
               .finally(() => {
                 refreshPromise = null;
               });
@@ -58,6 +64,12 @@ api.interceptors.request.use(
             console.log("refreshError:", refreshError);
             config.headers.Authorization = `Bearer ${token}`;
           }
+        } else {
+          // Có refresh đang chạy: đợi kết quả để dùng token mới
+          const res = await refreshPromise;
+          config.headers.Authorization = `Bearer ${
+            res?.data?.accessToken || token
+          }`;
         }
       } else {
         config.headers.Authorization = `Bearer ${token}`;

@@ -243,7 +243,7 @@ export default function TeacherProfileScreen() {
           </View>
 
           {profile.phoneNumber && (
-            <>
+            <View>
               <Divider style={{ marginVertical: 12 }} />
               <View style={styles.infoRow}>
                 <View style={styles.infoIcon}>
@@ -258,7 +258,7 @@ export default function TeacherProfileScreen() {
                   <Text style={styles.infoValue}>{profile.phoneNumber}</Text>
                 </View>
               </View>
-            </>
+            </View>
           )}
 
           <Divider style={{ marginVertical: 12 }} />
@@ -297,7 +297,7 @@ export default function TeacherProfileScreen() {
 
           {(profile.specialization ||
             (profile.specializations && profile.specializations.length > 0)) && (
-            <>
+            <View>
               <Divider style={{ marginVertical: 12 }} />
               <View style={styles.infoRow}>
                 <View style={styles.infoIcon}>
@@ -331,7 +331,7 @@ export default function TeacherProfileScreen() {
                   </View>
                 </View>
               </View>
-            </>
+            </View>
           )}
         </Card>
       </View>

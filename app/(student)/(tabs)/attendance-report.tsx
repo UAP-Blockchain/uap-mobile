@@ -21,6 +21,7 @@ import type {
 } from "@/types/roadmap";
 import type { AttendanceDto } from "@/types/attendance";
 import BackHeader from "@/components/BackHeader";
+import { router } from "expo-router";
 
 const palette = {
   primary: "#3674B5",
@@ -70,7 +71,7 @@ export default function AttendanceReportPage() {
       currentSummary?: CurriculumRoadmapSummaryDto | null
     ) => {
       if (semesterDetails[semesterNumber]) return;
-    setLoadingSemesters((prev) => ({ ...prev, [semesterNumber]: true }));
+      setLoadingSemesters((prev) => ({ ...prev, [semesterNumber]: true }));
       try {
         const data: CurriculumSemesterDto =
           await RoadmapServices.getMyCurriculumSemester(semesterNumber);
@@ -102,6 +103,10 @@ export default function AttendanceReportPage() {
     [semesterDetails, summary, selectedSubjectId]
   );
 
+  const redirectLogin = () => {
+    router.replace("/(auth)/login" as any);
+  };
+
   const loadSummary = useCallback(async () => {
     if (!isStudent) {
       setError("Chức năng này chỉ dành cho sinh viên.");
@@ -119,6 +124,12 @@ export default function AttendanceReportPage() {
         await loadSemester(firstSemester, data);
       }
     } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        redirectLogin();
+        return;
+      }
       const message =
         err?.response?.data?.message ||
         err?.message ||
@@ -179,37 +190,50 @@ export default function AttendanceReportPage() {
     []
   );
 
-  const loadAttendance = useCallback(async (subjectId: string) => {
-    if (!isStudent) {
-      setError("Chức năng này chỉ dành cho sinh viên.");
-      setAttendanceRecords([]);
-      return;
-    }
-    setLoadingAttendance(true);
-    setError(null);
-    try {
-      const records = await StudentAttendanceServices.getMyAttendance({
-        SubjectId: subjectId,
-      });
-      setAttendanceRecords(records);
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Không thể tải dữ liệu điểm danh.";
-      setError(message);
-      setAttendanceRecords([]);
-    } finally {
-      setLoadingAttendance(false);
-    }
-  }, [isStudent]);
+  const loadAttendance = useCallback(
+    async (subjectId: string) => {
+      if (!isStudent) {
+        setError("Chức năng này chỉ dành cho sinh viên.");
+        setAttendanceRecords([]);
+        return;
+      }
+      setLoadingAttendance(true);
+      setError(null);
+      try {
+        const records = await StudentAttendanceServices.getMyAttendance({
+          SubjectId: subjectId,
+        });
+        setAttendanceRecords(records);
+      } catch (err: any) {
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          setAttendanceRecords([]);
+          redirectLogin();
+          return;
+        }
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Không thể tải dữ liệu điểm danh.";
+        setError(message);
+        setAttendanceRecords([]);
+      } finally {
+        setLoadingAttendance(false);
+      }
+    },
+    [isStudent]
+  );
 
   useEffect(() => {
     const init = async () => {
-      const role =
-        ((await AsyncStorage.getItem("role")) || auth?.userProfile?.role || "")
-          .toString()
-          .toUpperCase();
+      const role = (
+        (await AsyncStorage.getItem("role")) ||
+        auth?.userProfile?.role ||
+        ""
+      )
+        .toString()
+        .toUpperCase();
       const student = role === "STUDENT";
       setIsStudent(student);
       if (!student) {
@@ -220,7 +244,11 @@ export default function AttendanceReportPage() {
       await loadSummary();
     };
     void init();
-  }, [auth, loadSummary]);
+
+    // ❗ Cố ý không để dependency để tránh vòng lặp vô hạn
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const attendanceSummary = useMemo(() => {
     const total = attendanceRecords.length;
