@@ -114,26 +114,26 @@ export default function HomePage() {
     () => [
       {
         title: "Thời khóa biểu",
-        icon: "calendar-blank",
+        icon: "calendar-clock",
         gradient: ["#5FA8F5", "#3674B5"],
         onPress: () => router.push("/(student)/(tabs)/timetable" as any),
       },
       {
         title: "Chứng chỉ của tôi",
-        icon: "shield-check",
+        icon: "certificate",
         gradient: ["#BC99FF", "#8155E5"],
         onPress: () => router.push("/(student)/(tabs)/my-credentials" as any),
       },
       {
         title: "Báo cáo điểm danh",
-        icon: "clipboard-text-outline",
+        icon: "account-check",
         gradient: ["#f9a8d4", "#ec4899"],
         onPress: () =>
           router.push("/(student)/(tabs)/attendance-report" as any),
       },
       {
         title: "Bảng điểm",
-        icon: "file-document",
+        icon: "chart-box",
         gradient: ["#FBCF6A", "#F7931A"],
         onPress: () => router.push("/(student)/(tabs)/mark-report" as any),
       },
