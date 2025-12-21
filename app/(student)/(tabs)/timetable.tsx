@@ -324,8 +324,15 @@ export default function TimetablePage() {
   };
 
   const handleViewDetails = useCallback((classInfo: ClassInfo) => {
+    const params = new URLSearchParams({
+      classId: classInfo.classId,
+      classCode: classInfo.classCode,
+      subjectCode: classInfo.subjectCode,
+      subjectName: classInfo.subjectName,
+      teacherName: classInfo.teacherName || '',
+    }).toString();
     router.push(
-      `/(student)/(tabs)/attendance-detail/${classInfo.classCode}` as any
+      `/(student)/(tabs)/attendance-detail/${classInfo.classCode}?${params}` as any
     );
   }, []);
 

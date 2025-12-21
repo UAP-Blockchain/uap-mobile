@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import BackHeader from "@/components/BackHeader";
 import { StudentCredentialServices } from "@/services/student/credentialServices";
 import type { StudentCredentialDto } from "@/types/credential";
@@ -111,6 +112,19 @@ export default function MyCredentialsScreen() {
         <Text style={[styles.statusChipText, { color }]}>{label}</Text>
       </View>
     );
+  };
+
+  const getIconGradient = (credential: StudentCredentialDto): [string, string] => {
+    const { certificateType } = credential;
+    
+    if (certificateType === "SubjectCompletion") {
+      return ["#3b82f6", "#1d4ed8"]; // Blue gradient
+    } else if (certificateType === "SemesterCompletion") {
+      return ["#a855f7", "#7e22ce"]; // Purple gradient
+    } else if (certificateType === "RoadmapCompletion") {
+      return ["#22c55e", "#16a34a"]; // Green gradient
+    }
+    return [palette.primary, palette.secondary]; // Default blue gradient
   };
 
   const renderCertificateType = (credential: StudentCredentialDto) => {
@@ -262,28 +276,37 @@ export default function MyCredentialsScreen() {
 
         {/* List */}
         <View style={styles.listContainer}>
-          {filteredCredentials.map((credential) => (
-            <View key={credential.id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <View style={styles.iconCircle}>
-                  <Text style={styles.iconText}>
-                    {(credential.subjectName ||
-                      credential.roadmapName ||
-                      "C")[0].toUpperCase()}
-                  </Text>
+          {filteredCredentials.map((credential) => {
+            const iconLetter = (
+              credential.subjectName ||
+              credential.roadmapName ||
+              "C"
+            )[0].toUpperCase();
+            const gradientColors = getIconGradient(credential);
+
+            return (
+              <View key={credential.id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <LinearGradient
+                    colors={gradientColors}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.iconCircleGradient}
+                  >
+                    <Text style={styles.iconText}>{iconLetter}</Text>
+                  </LinearGradient>
+                  <View style={styles.cardTitleSection}>
+                    <Text style={styles.cardTitle} numberOfLines={1}>
+                      {credential.subjectName ||
+                        credential.roadmapName ||
+                        credential.certificateType}
+                    </Text>
+                    <Text style={styles.cardSubtitle} numberOfLines={1}>
+                      Mã: {credential.credentialId}
+                    </Text>
+                  </View>
+                  {renderStatusChip(credential.status)}
                 </View>
-                <View style={styles.cardTitleSection}>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
-                    {credential.subjectName ||
-                      credential.roadmapName ||
-                      credential.certificateType}
-                  </Text>
-                  <Text style={styles.cardSubtitle} numberOfLines={1}>
-                    Mã: {credential.credentialId}
-                  </Text>
-                </View>
-                {renderStatusChip(credential.status)}
-              </View>
 
               <View style={styles.cardMetaRow}>
                 {renderCertificateType(credential)}
@@ -315,8 +338,9 @@ export default function MyCredentialsScreen() {
                   </View>
                 )}
               </View>
-            </View>
-          ))}
+              </View>
+            );
+          })}
         </View>
       </ScrollView>
     );
@@ -460,10 +484,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  iconCircleGradient: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
   iconText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: palette.primary,
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    textShadowColor: "rgba(0, 0, 0, 0.1)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+    letterSpacing: 0.5,
   },
   cardTitleSection: {
     flex: 1,

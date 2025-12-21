@@ -1,183 +1,253 @@
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  ScrollView,
-  Dimensions,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { selectAuthLogin } from "../../../../lib/features/loginSlice";
 import BackHeader from "@/components/BackHeader";
+import { StudentAttendanceServices } from "../../../../services/student/attendanceServices";
+import type { AttendanceDto, AttendanceStatisticsDto } from "../../../../types/attendance";
+import Toast from "react-native-toast-message";
 
-const { width } = Dimensions.get("window");
+const palette = {
+  primary: "#3674B5",
+  secondary: "#2196F3",
+  success: "#4CAF50",
+  warning: "#FFB347",
+  error: "#F44336",
+  background: "#F1F5FF",
+  card: "#FFFFFF",
+  surface: "#F7FAFF",
+  text: "#1F2933",
+  subtitle: "#6B7280",
+};
 
 interface AttendanceRecord {
   id: string;
   date: string;
-  slot: number;
-  lecturer: string;
-  status: "present" | "absent" | "future";
-  time: string;
-}
-
-interface CourseDetails {
-  courseCode: string;
-  courseName: string;
-  className: string;
-  totalSessions: number;
-  attendedSessions: number;
-  percentage: number;
-  presentCount: number;
-  absentCount: number;
-  futureCount: number;
+  timeSlotName: string;
+  startTime?: string;
+  endTime?: string;
+  teacherName?: string;
+  status: "present" | "absent" | "future" | "excused";
+  isPresent: boolean;
+  isExcused: boolean;
+  notes?: string | null;
+  excuseReason?: string | null;
 }
 
 export default function AttendanceDetailPage() {
-  const { courseCode } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const courseCode = params.courseCode as string;
+  const classId = params.classId as string;
+  const classCode = (params.classCode as string) || courseCode;
+  const subjectCode = (params.subjectCode as string) || courseCode;
+  const subjectName = (params.subjectName as string) || courseCode;
+  const teacherName = (params.teacherName as string) || "";
+
   const auth = useSelector(selectAuthLogin);
-  const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(
-    null
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [attendanceStats, setAttendanceStats] = useState<AttendanceStatisticsDto | null>(null);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return `${String(date.getDate()).padStart(2, "0")}/${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}/${date.getFullYear()}`;
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatTimeRange = (start?: string, end?: string): string => {
+    if (!start || !end) return "—";
+
+    try {
+      let startTime = start;
+      let endTime = end;
+
+      if (start.includes("T")) {
+        const date = new Date(start);
+        startTime = `${String(date.getHours()).padStart(2, "0")}:${String(
+          date.getMinutes()
+        ).padStart(2, "0")}`;
+      } else if (start.includes(":")) {
+        const parts = start.split(":");
+        startTime = `${parts[0]}:${parts[1]}`;
+      }
+
+      if (end.includes("T")) {
+        const date = new Date(end);
+        endTime = `${String(date.getHours()).padStart(2, "0")}:${String(
+          date.getMinutes()
+        ).padStart(2, "0")}`;
+      } else if (end.includes(":")) {
+        const parts = end.split(":");
+        endTime = `${parts[0]}:${parts[1]}`;
+      }
+
+      return `${startTime} - ${endTime}`;
+    } catch {
+      return "—";
+    }
+  };
+
+  const convertAttendanceToRecord = useCallback((attendance: AttendanceDto): AttendanceRecord => {
+    // Nếu API đã trả về bản ghi điểm danh (có id), thì đã được điểm danh rồi
+    // Không thể là "future" nữa. Chỉ dựa vào isPresent và isExcused
+    let status: "present" | "absent" | "future" | "excused";
+    
+    if (attendance.isPresent) {
+      status = "present";
+    } else if (attendance.isExcused) {
+      status = "excused";
+    } else {
+      // Nếu không có mặt và không có phép, thì là vắng mặt
+      status = "absent";
+    }
+
+    return {
+      id: attendance.id,
+      date: attendance.date,
+      timeSlotName: attendance.timeSlotName,
+      startTime: undefined,
+      endTime: undefined,
+      teacherName: undefined,
+      status,
+      isPresent: attendance.isPresent,
+      isExcused: attendance.isExcused,
+      notes: attendance.notes,
+      excuseReason: attendance.excuseReason,
+    };
+  }, []);
+
+  const fetchAttendanceData = useCallback(
+    async (isRefresh = false) => {
+      if (!classId) {
+        setError("Không tìm thấy thông tin lớp học");
+        setIsLoading(false);
+        return;
+      }
+
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setError(null);
+
+      try {
+        // Fetch attendance statistics
+        const stats = await StudentAttendanceServices.getMyAttendanceStatistics(classId);
+        setAttendanceStats(stats);
+
+        // Fetch attendance records
+        const records = await StudentAttendanceServices.getMyAttendance({
+          ClassId: classId,
+        });
+
+        // Convert and sort by date
+        const convertedRecords = records
+          .map(convertAttendanceToRecord)
+          .sort((a, b) => {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            return dateB - dateA; // Newest first
+          });
+
+        setAttendanceRecords(convertedRecords);
+      } catch (err: any) {
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Không thể tải dữ liệu điểm danh.";
+        setError(message);
+        Toast.show({
+          type: "error",
+          text1: "Lỗi",
+          text2: message,
+          text1Style: { textAlign: "center", fontSize: 16 },
+        });
+      } finally {
+        setIsLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [classId, convertAttendanceToRecord]
   );
-  const [attendanceRecords, setAttendanceRecords] = useState<
-    AttendanceRecord[]
-  >([]);
 
   useEffect(() => {
-    // Mock data - in real app, fetch from API based on courseCode
-    const mockCourseDetails: CourseDetails = {
-      courseCode: courseCode as string,
-      courseName: "Ho Chi Minh Ideology",
-      className: "Half1_GD1705",
-      totalSessions: 10,
-      attendedSessions: 10,
-      percentage: 100,
-      presentCount: 10,
-      absentCount: 0,
-      futureCount: 0,
-    };
+    fetchAttendanceData();
+  }, [fetchAttendanceData]);
 
-    const mockAttendanceRecords: AttendanceRecord[] = [
-      {
-        id: "1",
-        date: "09/09/2025",
-        slot: 1,
-        lecturer: "GV001",
-        status: "present",
-        time: "08:00 - 10:00",
-      },
-      {
-        id: "2",
-        date: "12/09/2025",
-        slot: 2,
-        lecturer: "GV001",
-        status: "present",
-        time: "10:30 - 12:30",
-      },
-      {
-        id: "3",
-        date: "16/09/2025",
-        slot: 3,
-        lecturer: "GV001",
-        status: "present",
-        time: "14:00 - 16:00",
-      },
-      {
-        id: "4",
-        date: "19/09/2025",
-        slot: 4,
-        lecturer: "GV001",
-        status: "present",
-        time: "08:00 - 10:00",
-      },
-      {
-        id: "5",
-        date: "23/09/2025",
-        slot: 5,
-        lecturer: "GV001",
-        status: "present",
-        time: "10:30 - 12:30",
-      },
-      {
-        id: "6",
-        date: "26/09/2025",
-        slot: 6,
-        lecturer: "GV001",
-        status: "present",
-        time: "14:00 - 16:00",
-      },
-      {
-        id: "7",
-        date: "30/09/2025",
-        slot: 7,
-        lecturer: "GV001",
-        status: "present",
-        time: "08:00 - 10:00",
-      },
-      {
-        id: "8",
-        date: "03/10/2025",
-        slot: 8,
-        lecturer: "GV001",
-        status: "present",
-        time: "10:30 - 12:30",
-      },
-      {
-        id: "9",
-        date: "07/10/2025",
-        slot: 9,
-        lecturer: "GV001",
-        status: "present",
-        time: "14:00 - 16:00",
-      },
-      {
-        id: "10",
-        date: "10/10/2025",
-        slot: 10,
-        lecturer: "GV001",
-        status: "present",
-        time: "08:00 - 10:00",
-      },
-    ];
-
-    setCourseDetails(mockCourseDetails);
-    setAttendanceRecords(mockAttendanceRecords);
-  }, [courseCode]);
+  const onRefresh = useCallback(() => {
+    fetchAttendanceData(true);
+  }, [fetchAttendanceData]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "present":
-        return "#52c41a";
+        return palette.success;
       case "absent":
-        return "#ff4d4f";
+        return palette.error;
+      case "excused":
+        return palette.warning;
       case "future":
-        return "#faad14";
+        return palette.subtitle;
       default:
-        return "#d9d9d9";
+        return palette.subtitle;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "present":
+        return "Đã tham gia";
+      case "absent":
+        return "Vắng mặt";
+      case "excused":
+        return "Có phép";
+      case "future":
+        return "Chưa đến";
+      default:
+        return "";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "present":
-        return "check";
+        return "check-circle";
       case "absent":
-        return "close";
+        return "close-circle";
+      case "excused":
+        return "alert-circle";
       case "future":
-        return "check";
+        return "clock-outline";
       default:
-        return "check";
+        return "help-circle";
     }
   };
 
-  const renderProgressCircle = (percentage: number, size: number = 60) => {
+  const renderProgressCircle = (percentage: number, size: number = 80) => {
     const color =
-      percentage >= 80 ? "#52c41a" : percentage >= 50 ? "#faad14" : "#ff4d4f";
-    const radius = size / 2;
-    const strokeWidth = 6;
+      percentage >= 80
+        ? palette.success
+        : percentage >= 50
+        ? palette.warning
+        : palette.error;
 
     return (
       <View style={styles.progressContainer}>
@@ -188,8 +258,8 @@ export default function AttendanceDetailPage() {
               {
                 width: size,
                 height: size,
-                borderRadius: radius,
-                borderWidth: strokeWidth,
+                borderRadius: size / 2,
+                borderWidth: 8,
                 borderColor: "#f0f0f0",
               },
             ]}
@@ -200,8 +270,8 @@ export default function AttendanceDetailPage() {
               {
                 width: size,
                 height: size,
-                borderRadius: radius,
-                borderWidth: strokeWidth,
+                borderRadius: size / 2,
+                borderWidth: 8,
                 borderColor: color,
                 borderTopColor: color,
                 borderRightColor: percentage > 25 ? color : "#f0f0f0",
@@ -212,7 +282,9 @@ export default function AttendanceDetailPage() {
             ]}
           />
           <View style={styles.progressTextContainer}>
-            <Text style={[styles.progressText, { color }]}>{percentage}%</Text>
+            <Text style={[styles.progressText, { color, fontSize: size * 0.2 }]}>
+              {percentage}%
+            </Text>
           </View>
         </View>
       </View>
@@ -222,93 +294,217 @@ export default function AttendanceDetailPage() {
   const renderAttendanceRecord = (record: AttendanceRecord) => {
     const statusColor = getStatusColor(record.status);
     const statusIcon = getStatusIcon(record.status);
+    const statusText = getStatusText(record.status);
 
     return (
       <View key={record.id} style={styles.recordCard}>
-        <View style={styles.recordLeft}>
-          <View style={styles.dateContainer}>
-            <Text style={styles.dateText}>{record.date}</Text>
-            <Text style={styles.slotText}>Slot {record.slot}</Text>
+        <View style={[styles.recordLeftBorder, { backgroundColor: statusColor }]} />
+        <View style={styles.recordContent}>
+          <View style={styles.recordHeader}>
+            <View style={styles.recordDateInfo}>
+              <Text style={styles.dateText}>{formatDate(record.date)}</Text>
+              <Text style={styles.slotText}>{record.timeSlotName}</Text>
+            </View>
+            <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+              <MaterialCommunityIcons
+                name={statusIcon as any}
+                size={16}
+                color="#fff"
+              />
+            </View>
           </View>
-          <View style={styles.timeContainer}>
-            <Text style={styles.timeText}>{record.time}</Text>
-            <Text style={styles.lecturerText}>Lecturer: {record.lecturer}</Text>
-          </View>
-        </View>
-        <View style={styles.recordRight}>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-            <AntDesign name={statusIcon} size={12} color="#fff" />
+
+          <View style={styles.recordDetails}>
+            <View style={styles.detailRow}>
+              <MaterialCommunityIcons
+                name="clock-outline"
+                size={14}
+                color={palette.subtitle}
+              />
+              <Text style={styles.detailText}>
+                {record.timeSlotName || "—"}
+              </Text>
+            </View>
+            {(teacherName || record.teacherName) && (
+              <View style={styles.detailRow}>
+                <MaterialCommunityIcons
+                  name="account"
+                  size={14}
+                  color={palette.subtitle}
+                />
+                <Text style={styles.detailText}>
+                  {teacherName || record.teacherName}
+                </Text>
+              </View>
+            )}
+            <View style={styles.detailRow}>
+              <MaterialCommunityIcons
+                name={statusIcon as any}
+                size={14}
+                color={statusColor}
+              />
+              <Text style={[styles.statusText, { color: statusColor }]}>
+                {statusText}
+              </Text>
+            </View>
+            {record.notes && (
+              <View style={styles.detailRow}>
+                <MaterialCommunityIcons
+                  name="note-text"
+                  size={14}
+                  color={palette.subtitle}
+                />
+                <Text style={styles.detailText}>{record.notes}</Text>
+              </View>
+            )}
+            {record.excuseReason && (
+              <View style={styles.detailRow}>
+                <MaterialCommunityIcons
+                  name="file-document-edit"
+                  size={14}
+                  color={palette.warning}
+                />
+                <Text style={[styles.detailText, { color: palette.warning }]}>
+                  Lý do: {record.excuseReason}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
     );
   };
 
-  if (!courseDetails) {
+  if (isLoading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+      <View style={styles.container}>
+        <BackHeader
+          title="Chi Tiết Điểm Danh"
+          subtitle={`${subjectCode} - ${subjectName}`}
+          subtitleSmall={`Lớp: ${classCode}`}
+          gradientColors={[palette.primary, palette.secondary]}
+          fallbackRoute="/(student)/(tabs)/timetable"
+        />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={palette.primary} />
+          <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
+        </View>
       </View>
     );
   }
 
+  if (error && !attendanceStats) {
+    return (
+      <View style={styles.container}>
+        <BackHeader
+          title="Chi Tiết Điểm Danh"
+          subtitle={`${subjectCode} - ${subjectName}`}
+          subtitleSmall={`Lớp: ${classCode}`}
+          gradientColors={[palette.primary, palette.secondary]}
+          fallbackRoute="/(student)/(tabs)/timetable"
+        />
+        <View style={styles.errorContainer}>
+          <MaterialCommunityIcons
+            name="alert-circle"
+            size={48}
+            color={palette.error}
+          />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => fetchAttendanceData()}
+          >
+            <Text style={styles.retryButtonText}>Thử lại</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  const percentage = attendanceStats?.attendanceRate || 0;
+  const totalSlots = attendanceStats?.totalSlots || 0;
+  const presentCount = attendanceStats?.presentCount || 0;
+  const absentCount = attendanceStats?.absentCount || 0;
+  const excusedCount = attendanceStats?.excusedCount || 0;
+
   return (
     <View style={styles.container}>
       <BackHeader
-        title="Attendance Details"
-        subtitle={`${courseDetails.courseCode} - ${courseDetails.courseName}`}
-        subtitleSmall={`Class: ${courseDetails.className}`}
-        gradientColors={["#fa8c16", "#ffc53d"]}
-        fallbackRoute="/(student)/(tabs)/attendance"
+        title="Chi Tiết Điểm Danh"
+        subtitle={`${subjectCode} - ${subjectName}`}
+        subtitleSmall={`Lớp: ${classCode}`}
+        gradientColors={[palette.primary, palette.secondary]}
+        fallbackRoute="/(student)/(tabs)/timetable"
       />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[palette.primary]}
+            tintColor={palette.primary}
+          />
+        }
+      >
         {/* Course Info Card */}
         <View style={styles.courseCard}>
           <View style={styles.courseHeader}>
             <Text style={styles.courseTitle}>
-              {courseDetails.courseCode} - {courseDetails.courseName}
+              {subjectCode} - {subjectName}
             </Text>
-            <Text style={styles.className}>
-              Class: {courseDetails.className}
-            </Text>
+            <Text style={styles.className}>Lớp: {classCode}</Text>
+            {teacherName && (
+              <View style={styles.teacherRow}>
+                <MaterialCommunityIcons
+                  name="account"
+                  size={16}
+                  color={palette.subtitle}
+                />
+                <Text style={styles.teacherText}>{teacherName}</Text>
+              </View>
+            )}
           </View>
 
           {/* Attendance Summary */}
           <View style={styles.summaryContainer}>
             <View style={styles.progressSection}>
-              {renderProgressCircle(courseDetails.percentage)}
+              {renderProgressCircle(percentage)}
             </View>
             <View style={styles.summaryInfo}>
               <Text style={styles.attendedText}>
-                Attended: {courseDetails.attendedSessions}/
-                {courseDetails.totalSessions}
+                Đã tham gia: {presentCount}/{totalSlots} buổi
               </Text>
               <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
                   <View
-                    style={[styles.statDot, { backgroundColor: "#52c41a" }]}
+                    style={[styles.statDot, { backgroundColor: palette.success }]}
                   />
                   <Text style={styles.statText}>
-                    {courseDetails.presentCount} Present
+                    {presentCount} Có mặt
                   </Text>
                 </View>
                 <View style={styles.statItem}>
                   <View
-                    style={[styles.statDot, { backgroundColor: "#ff4d4f" }]}
+                    style={[styles.statDot, { backgroundColor: palette.error }]}
                   />
                   <Text style={styles.statText}>
-                    {courseDetails.absentCount} Absent
+                    {absentCount} Vắng mặt
                   </Text>
                 </View>
-                <View style={styles.statItem}>
-                  <View
-                    style={[styles.statDot, { backgroundColor: "#faad14" }]}
-                  />
-                  <Text style={styles.statText}>
-                    {courseDetails.futureCount} Future
-                  </Text>
-                </View>
+                {excusedCount > 0 && (
+                  <View style={styles.statItem}>
+                    <View
+                      style={[styles.statDot, { backgroundColor: palette.warning }]}
+                    />
+                    <Text style={styles.statText}>
+                      {excusedCount} Có phép
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -316,8 +512,24 @@ export default function AttendanceDetailPage() {
 
         {/* Attendance Records */}
         <View style={styles.recordsContainer}>
-          <Text style={styles.recordsTitle}>Attendance Records</Text>
-          {attendanceRecords.map((record) => renderAttendanceRecord(record))}
+          <View style={styles.recordsHeader}>
+            <Text style={styles.recordsTitle}>Lịch Sử Điểm Danh</Text>
+            <Text style={styles.recordsCount}>
+              {attendanceRecords.length} bản ghi
+            </Text>
+          </View>
+          {attendanceRecords.length > 0 ? (
+            attendanceRecords.map((record) => renderAttendanceRecord(record))
+          ) : (
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons
+                name="calendar-blank"
+                size={48}
+                color={palette.subtitle}
+              />
+              <Text style={styles.emptyText}>Chưa có bản ghi điểm danh</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -327,51 +539,92 @@ export default function AttendanceDetailPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: palette.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: palette.subtitle,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 32,
+    gap: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: palette.text,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: palette.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
   content: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   courseCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 12,
+    backgroundColor: palette.card,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 3,
-    borderWidth: 1,
-    borderColor: "#fff2e6",
   },
   courseHeader: {
-    marginBottom: 12,
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0, 0, 0, 0.05)",
   },
   courseTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fa8c16",
-    marginBottom: 4,
+    color: palette.primary,
+    marginBottom: 8,
   },
   className: {
     fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
+    color: palette.text,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  teacherRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 4,
+  },
+  teacherText: {
+    fontSize: 13,
+    color: palette.subtitle,
   },
   summaryContainer: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 16,
   },
   progressSection: {
-    marginRight: 12,
+    marginRight: 8,
   },
   progressContainer: {
     position: "relative",
@@ -385,7 +638,6 @@ const styles = StyleSheet.create({
   },
   progressBackground: {
     position: "absolute",
-    backgroundColor: "#f0f0f0",
   },
   progressArc: {
     position: "absolute",
@@ -396,7 +648,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   progressText: {
-    fontSize: 12,
     fontWeight: "bold",
   },
   summaryInfo: {
@@ -405,7 +656,7 @@ const styles = StyleSheet.create({
   attendedText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#fa8c16",
+    color: palette.primary,
     marginBottom: 12,
   },
   statsContainer: {
@@ -414,79 +665,110 @@ const styles = StyleSheet.create({
   statItem: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 8,
   },
   statDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   statText: {
     fontSize: 14,
-    color: "#666",
+    color: palette.text,
     fontWeight: "500",
   },
   recordsContainer: {
-    marginTop: 12,
-    marginBottom: 100, // Extra space for bottom nav
+    marginTop: 8,
+  },
+  recordsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
   recordsTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
+    color: palette.text,
+  },
+  recordsCount: {
+    fontSize: 14,
+    color: palette.subtitle,
   },
   recordCard: {
     flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 6,
+    backgroundColor: palette.card,
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-    alignItems: "center",
+    shadowRadius: 4,
+    elevation: 2,
   },
-  recordLeft: {
+  recordLeftBorder: {
+    width: 4,
+  },
+  recordContent: {
+    flex: 1,
+    padding: 16,
+  },
+  recordHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  recordDateInfo: {
     flex: 1,
   },
-  dateContainer: {
-    marginBottom: 4,
-  },
   dateText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: palette.text,
+    marginBottom: 4,
   },
   slotText: {
     fontSize: 12,
-    color: "#fa8c16",
+    color: palette.primary,
     fontWeight: "600",
   },
-  timeContainer: {
-    gap: 4,
-  },
-  timeText: {
-    fontSize: 11,
-    color: "#666",
-    fontWeight: "500",
-  },
-  lecturerText: {
-    fontSize: 10,
-    color: "#999",
-  },
-  recordRight: {
-    alignItems: "center",
-  },
   statusBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
+  },
+  recordDetails: {
+    gap: 8,
+  },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  detailText: {
+    fontSize: 13,
+    color: palette.subtitle,
+    flex: 1,
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    backgroundColor: palette.card,
+    borderRadius: 12,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: palette.subtitle,
+    textAlign: "center",
   },
 });
