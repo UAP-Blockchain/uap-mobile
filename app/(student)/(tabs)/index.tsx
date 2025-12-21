@@ -150,45 +150,37 @@ export default function HomePage() {
   const statsCards = useMemo(() => {
     const totalCredentials = credentials.length;
     const issued = credentials.filter((c) => c.status === "Issued").length;
-    const pending = credentials.filter((c) => c.status === "Pending").length;
     const blockchain = credentials.filter((c) => c.isOnBlockchain).length;
     const attendanceRate =
       attendanceStats?.attendanceRate != null
         ? Math.round(attendanceStats.attendanceRate)
         : null;
+    const issuedPercentage =
+      totalCredentials > 0
+        ? Math.round((issued / Math.max(totalCredentials, 1)) * 100)
+        : 0;
 
     return [
       {
         title: "Tổng chứng chỉ",
         value: totalCredentials.toString(),
-        trend:
+        badge:
           blockchain > 0
             ? `${blockchain} trên blockchain`
             : "Chưa có blockchain",
         color: "#5FA8F5",
         icon: "file-document",
+        progress: totalCredentials > 0 ? blockchain / totalCredentials : 0,
+        gradient: ["#e0ecff", "#f0f9ff"],
       },
       {
         title: "Đã phát hành",
         value: issued.toString(),
-        trend:
-          totalCredentials > 0
-            ? `${Math.round(
-                (issued / Math.max(totalCredentials, 1)) * 100
-              )}% tổng số`
-            : "—",
-        color: "#53D769",
+        badge: totalCredentials > 0 ? `${issuedPercentage}% tổng số` : "—",
+        color: "#22c55e",
         icon: "check-circle",
-      },
-      {
-        title: "Điểm danh",
-        value: attendanceRate != null ? `${attendanceRate}%` : "--",
-        trend:
-          attendanceStats && attendanceStats.totalSlots > 0
-            ? `${attendanceStats.presentCount}/${attendanceStats.totalSlots} buổi có mặt`
-            : "Chưa có dữ liệu",
-        color: "#FFB347",
-        icon: "clock-outline",
+        progress: issuedPercentage / 100,
+        gradient: ["#dcfce7", "#f0fdf4"],
       },
     ];
   }, [credentials, attendanceStats]);
@@ -294,48 +286,64 @@ export default function HomePage() {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Hiệu suất học tập</Text>
-          <Chip
-            compact
+          <View style={styles.sectionHeaderLeft}>
+            <MaterialCommunityIcons
+              name="chart-line"
+              size={20}
+              color={palette.primary}
+            />
+            <Text style={styles.sectionTitle}>Hiệu suất học tập</Text>
+          </View>
+          <TouchableOpacity
             onPress={() => router.push("/(student)/(tabs)/mark-report" as any)}
           >
-            Xem chi tiết
-          </Chip>
+            <Text style={styles.viewDetailText}>Chi tiết</Text>
+          </TouchableOpacity>
         </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 12, paddingVertical: 4 }}
-        >
+        <View style={styles.performanceGrid}>
           {statsCards.map((card) => (
-            <Card key={card.title} style={styles.statCard} elevation={2}>
-              <View style={styles.statCardHeader}>
+            <LinearGradient
+              key={card.title}
+              colors={card.gradient as [string, string]}
+              style={styles.performanceCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.performanceCardHeader}>
                 <View
                   style={[
-                    styles.statIcon,
-                    { backgroundColor: `${card.color}20` },
+                    styles.performanceIcon,
+                    { backgroundColor: "#fff" },
                   ]}
                 >
                   <MaterialCommunityIcons
                     name={card.icon as any}
-                    size={22}
+                    size={20}
                     color={card.color}
                   />
                 </View>
-                <Text style={[styles.statTrend, { color: card.color }]}>
-                  {card.trend}
-                </Text>
+                <View style={styles.performanceBadge}>
+                  <Text style={[styles.performanceBadgeText, { color: card.color }]}>
+                    {card.badge}
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.statValue}>{card.value}</Text>
-              <Text style={styles.statLabel}>{card.title}</Text>
-              <ProgressBar
-                progress={0.75}
-                color={card.color}
-                style={{ marginTop: 12, borderRadius: 4 }}
-              />
-            </Card>
+              <Text style={styles.performanceValue}>{card.value}</Text>
+              <Text style={styles.performanceLabel}>{card.title}</Text>
+              <View style={styles.performanceProgressContainer}>
+                <View
+                  style={[
+                    styles.performanceProgressBar,
+                    {
+                      width: `${card.progress * 100}%`,
+                      backgroundColor: card.color,
+                    },
+                  ]}
+                />
+              </View>
+            </LinearGradient>
           ))}
-        </ScrollView>
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -504,51 +512,85 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
+  sectionHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: palette.text,
   },
-  statCard: {
-    width: 180,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "rgba(54,116,181,0.08)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+  viewDetailText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: palette.primary,
   },
-  statCardHeader: {
+  performanceGrid: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  performanceCard: {
+    flex: 1,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  performanceCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
+    marginBottom: 12,
   },
-  statIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  performanceIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  statTrend: {
-    fontWeight: "600",
-    fontSize: 11,
-    color: palette.subtitle,
+  performanceBadge: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    maxWidth: "60%",
   },
-  statValue: {
-    fontSize: 26,
+  performanceBadgeText: {
+    fontSize: 10,
     fontWeight: "700",
-    marginTop: 10,
-    color: palette.text,
   },
-  statLabel: {
-    color: palette.subtitle,
-    marginTop: 2,
+  performanceValue: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: palette.text,
+    marginBottom: 4,
+  },
+  performanceLabel: {
     fontSize: 13,
+    color: palette.subtitle,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+  performanceProgressContainer: {
+    height: 6,
+    backgroundColor: "rgba(0, 0, 0, 0.08)",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  performanceProgressBar: {
+    height: "100%",
+    borderRadius: 3,
   },
   quickActionCard: {
     width: 160,
