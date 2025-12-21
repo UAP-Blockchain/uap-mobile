@@ -78,9 +78,7 @@ export default function DrawerLayout() {
             {auth?.userProfile?.code || ""}
           </Text>
           <View style={styles.drawerRoleBadge}>
-            <Text style={styles.drawerRoleText}>
-              {auth?.userProfile?.role || "STUDENT"}
-            </Text>
+            <Text style={styles.drawerRoleText}>Học sinh</Text>
           </View>
         </LinearGradient>
 
@@ -298,7 +296,8 @@ const styles = StyleSheet.create({
   menuDivider: {
     height: 1,
     backgroundColor: "#f0f0f0",
-    marginVertical: 8,
+    marginTop: 12,
+    marginBottom: 4,
     marginHorizontal: 20,
   },
   logoutContainer: {

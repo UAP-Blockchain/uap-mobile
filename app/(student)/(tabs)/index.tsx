@@ -259,7 +259,7 @@ export default function HomePage() {
                 textStyle={{ color: "#fff", fontWeight: "600" }}
                 style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
               >
-                {auth?.userProfile?.role || "STUDENT"}
+                Học sinh
               </Chip>
               {auth?.userProfile?.code && (
                 <Chip
@@ -311,10 +311,7 @@ export default function HomePage() {
             >
               <View style={styles.performanceCardHeader}>
                 <View
-                  style={[
-                    styles.performanceIcon,
-                    { backgroundColor: "#fff" },
-                  ]}
+                  style={[styles.performanceIcon, { backgroundColor: "#fff" }]}
                 >
                   <MaterialCommunityIcons
                     name={card.icon as any}
@@ -323,7 +320,9 @@ export default function HomePage() {
                   />
                 </View>
                 <View style={styles.performanceBadge}>
-                  <Text style={[styles.performanceBadgeText, { color: card.color }]}>
+                  <Text
+                    style={[styles.performanceBadgeText, { color: card.color }]}
+                  >
                     {card.badge}
                   </Text>
                 </View>
