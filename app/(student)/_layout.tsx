@@ -1,6 +1,6 @@
 import { Drawer } from "expo-router/drawer";
 import React, { useCallback } from "react";
-import { Alert, Pressable, Text, View, StyleSheet } from "react-native";
+import { Pressable, Text, View, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
@@ -117,7 +117,9 @@ export default function DrawerLayout() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/(student)/(tabs)/my-credentials" as any)}
+            onPress={() =>
+              router.push("/(student)/(tabs)/my-credentials" as any)
+            }
             style={({ pressed }) => [
               styles.menuItem,
               pressed && styles.menuItemPressed,
@@ -193,25 +195,6 @@ export default function DrawerLayout() {
               color={palette.primary}
             />
             <Text style={styles.menuItemText}>Thông tin cá nhân</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => {
-              Alert.alert("Thông báo", "Tính năng đang phát triển");
-            }}
-            style={({ pressed }) => [
-              styles.menuItem,
-              pressed && styles.menuItemPressed,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="cog"
-              size={24}
-              color={palette.subtitle}
-            />
-            <Text style={[styles.menuItemText, { color: palette.subtitle }]}>
-              Cài đặt
-            </Text>
           </Pressable>
         </View>
 
