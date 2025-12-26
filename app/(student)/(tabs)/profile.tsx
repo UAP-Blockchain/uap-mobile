@@ -45,26 +45,26 @@ export default function ProfilePage() {
     } else {
       setLoading(true);
     }
-    setError(null);
-    try {
-      const data = await StudentServices.getCurrentStudentProfile();
-      setStudent(data);
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Không thể tải hồ sơ sinh viên.";
-      setError(message);
+      setError(null);
+      try {
+        const data = await StudentServices.getCurrentStudentProfile();
+        setStudent(data);
+      } catch (err: any) {
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Không thể tải hồ sơ sinh viên.";
+        setError(message);
       Toast.show({
         type: "error",
         text1: "Lỗi",
         text2: message,
       });
-    } finally {
-      setLoading(false);
+          } finally {
+        setLoading(false);
       setRefreshing(false);
-    }
-  };
+      }
+    };
 
   useEffect(() => {
     void loadProfile();
@@ -109,7 +109,7 @@ export default function ProfilePage() {
       <View
         style={[
           styles.container,
-          {
+    {
             paddingTop: insets.top,
             justifyContent: "center",
             alignItems: "center",
@@ -118,11 +118,11 @@ export default function ProfilePage() {
         ]}
       >
         <View style={styles.errorIconContainer}>
-          <MaterialCommunityIcons
+        <MaterialCommunityIcons
             name="account-alert-outline"
             size={64}
             color={palette.error}
-          />
+        />
         </View>
         <Text
           style={{
@@ -178,7 +178,7 @@ export default function ProfilePage() {
                 color="rgba(255,255,255,0.9)"
               />
               <Text style={styles.heroCode}>{student.studentCode}</Text>
-            </View>
+          </View>
           </View>
           <View
             style={[
@@ -229,11 +229,11 @@ export default function ProfilePage() {
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.statIconContainer}>
-              <MaterialCommunityIcons
-                name="book-open-variant"
+            <MaterialCommunityIcons
+              name="book-open-variant"
                 size={28}
-                color={palette.primary}
-              />
+              color={palette.primary}
+            />
             </View>
             <Text style={styles.statNumber}>{student.totalClasses || 0}</Text>
             <Text style={styles.statLabel}>Tổng số lớp</Text>
@@ -245,11 +245,11 @@ export default function ProfilePage() {
             end={{ x: 1, y: 1 }}
           >
             <View style={[styles.statIconContainer, { backgroundColor: "#fef3c7" }]}>
-              <MaterialCommunityIcons
+            <MaterialCommunityIcons
                 name="star"
                 size={28}
                 color={palette.warning}
-              />
+            />
             </View>
             <Text style={styles.statNumber}>
               {typeof student.gpa === "number" ? student.gpa.toFixed(2) : "—"}
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                 color={palette.primary}
               />
             </View>
-            <Text style={styles.sectionTitle}>Thông tin cá nhân</Text>
+          <Text style={styles.sectionTitle}>Thông tin cá nhân</Text>
           </View>
           <View style={styles.infoList}>
             <View style={styles.infoItem}>
@@ -310,7 +310,7 @@ export default function ProfilePage() {
                   size={18}
                   color={palette.primary}
                 />
-              </View>
+          </View>
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>Ngày nhập học</Text>
                 <Text style={styles.infoValue}>
@@ -319,7 +319,7 @@ export default function ProfilePage() {
                     month: "long",
                     day: "numeric",
                   })}
-                </Text>
+            </Text>
               </View>
             </View>
           </View>
@@ -330,12 +330,12 @@ export default function ProfilePage() {
           <View style={styles.card}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionIconContainer}>
-                <MaterialCommunityIcons
+                  <MaterialCommunityIcons
                   name="book-open-page-variant"
                   size={20}
-                  color={palette.primary}
-                />
-              </View>
+                    color={palette.primary}
+                  />
+                </View>
               <Text style={styles.sectionTitle}>
                 Lớp đang học ({student.currentClasses.length})
               </Text>
@@ -378,18 +378,18 @@ export default function ProfilePage() {
                             size={12}
                             color={palette.subtitle}
                           />
-                          <Text style={styles.classMeta}>
+                  <Text style={styles.classMeta}>
                             {cls.credits} tín chỉ
-                          </Text>
-                        </View>
+                  </Text>
+                </View>
                       </View>
                     </View>
                   </View>
                   {index < Math.min(student.currentClasses.length, 5) - 1 && (
                     <View style={styles.divider} />
                   )}
-                </View>
-              ))}
+              </View>
+            ))}
             </View>
           </View>
         )}

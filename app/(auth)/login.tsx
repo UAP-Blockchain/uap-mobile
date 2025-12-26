@@ -446,14 +446,14 @@ const LoginScreen: React.FC = () => {
                     onPress={() => router.push("/public-portal" as any)}
                     activeOpacity={0.8}
                   >
-                    <AntDesign
+                    {/* <AntDesign
                       name="safety-certificate"
                       size={16}
                       color="#1777ff"
-                    />
-                    <Text style={styles.publicPortalText}>
+                    /> */}
+                    {/* <Text style={styles.publicPortalText}>
                       Truy cập Public Portal
-                    </Text>
+                    </Text> */}
                   </TouchableOpacity>
                 </View>
               </Animated.View>

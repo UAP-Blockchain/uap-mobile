@@ -285,8 +285,8 @@ export default function MyCredentialsScreen() {
             const gradientColors = getIconGradient(credential);
 
             return (
-              <View key={credential.id} style={styles.card}>
-                <View style={styles.cardHeader}>
+            <View key={credential.id} style={styles.card}>
+              <View style={styles.cardHeader}>
                   <LinearGradient
                     colors={gradientColors}
                     start={{ x: 0, y: 0 }}
@@ -295,18 +295,18 @@ export default function MyCredentialsScreen() {
                   >
                     <Text style={styles.iconText}>{iconLetter}</Text>
                   </LinearGradient>
-                  <View style={styles.cardTitleSection}>
-                    <Text style={styles.cardTitle} numberOfLines={1}>
-                      {credential.subjectName ||
-                        credential.roadmapName ||
-                        credential.certificateType}
-                    </Text>
-                    <Text style={styles.cardSubtitle} numberOfLines={1}>
-                      Mã: {credential.credentialId}
-                    </Text>
-                  </View>
-                  {renderStatusChip(credential.status)}
+                <View style={styles.cardTitleSection}>
+                  <Text style={styles.cardTitle} numberOfLines={1}>
+                    {credential.subjectName ||
+                      credential.roadmapName ||
+                      credential.certificateType}
+                  </Text>
+                  <Text style={styles.cardSubtitle} numberOfLines={1}>
+                    Mã: {credential.credentialId}
+                  </Text>
                 </View>
+                {renderStatusChip(credential.status)}
+              </View>
 
               <View style={styles.cardMetaRow}>
                 {renderCertificateType(credential)}
@@ -338,7 +338,7 @@ export default function MyCredentialsScreen() {
                   </View>
                 )}
               </View>
-              </View>
+            </View>
             );
           })}
         </View>
